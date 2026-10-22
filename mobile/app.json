@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Del Sur",
+    "slug": "appdelsur",
+    "scheme": "appdelsur",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0C3C6E"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "ar.org.delsur.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "ar.org.delsur.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0C3C6E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "name": "Del Sur · Somos familia",
+      "shortName": "Del Sur",
+      "themeColor": "#0C3C6E",
+      "backgroundColor": "#0C3C6E"
+    },
+    "plugins": [
+      "expo-web-browser",
+      "expo-secure-store",
+      "expo-image",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "eaf49b49-6098-4ba6-9895-8ee1aa7d908d"
+      }
+    },
+    "owner": "josetabuyo",
+    "updates": {
+      "url": "https://u.expo.dev/eaf49b49-6098-4ba6-9895-8ee1aa7d908d"
+    }
+  }
+}

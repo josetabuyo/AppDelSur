@@ -1,0 +1,20 @@
+node_modules
+.next
+.data
+.env*.local
+next-env.d.ts
+*.tsbuildinfo
+
+# export web de la app (scripts/build-web.sh)
+/public/_expo
+/public/assets
+/public/index.html
+/public/favicon.ico
+/public/metadata.json
+.vercel
+.env*
+
+# skills que instala la integración de Neon (no son del proyecto)
+/.agents
+/.claude
+skills-lock.json
