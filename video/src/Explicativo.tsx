@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Img, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig, interpolate, Easing} from 'remotion';
+import {AbsoluteFill, Audio, Img, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig, interpolate, Easing} from 'remotion';
 import {loadFont} from '@remotion/google-fonts/Anton';
 import {loadFont as loadBody} from '@remotion/google-fonts/Inter';
 
@@ -9,7 +9,9 @@ const {fontFamily: INTER} = loadBody('normal', {weights: ['600', '800']});
 const C = {sky: '#2AA7DF', navy: '#0C3C6E', yellow: '#F2D94E', white: '#FFFFFF'};
 
 // Scene lengths (frames @30fps)
-const D = [150, 180, 180, 150, 300, 150, 220];
+const D = [150, 225, 180, 165, 300, 210, 220];
+// Narración (voz es-AR Tomás, edge-tts): un clip por escena, 10 frames después de que arranca.
+const VO_OFFSET = 10;
 const starts = D.reduce<number[]>((a, d, i) => [...a, (a[i - 1] ?? 0) + (i ? D[i - 1] : 0)], []);
 export const TOTAL = D.reduce((a, b) => a + b, 0);
 
@@ -290,7 +292,13 @@ const S7 = () => {
 const scenes = [S1, S2, S3, S4, S5, S6, S7];
 export const Explicativo: React.FC = () => (
   <AbsoluteFill style={{background: C.navy}}>
-    {/* Hook para música: <Audio src={staticFile('musica.mp3')} volume={0.4} /> */}
+    {/* Música procedural libre de derechos (make_music.py de relay-motion-video), ya baja sola bajo la voz. */}
+    <Audio src={staticFile('musica.wav')} volume={0.55} />
+    {D.map((_, i) => (
+      <Sequence key={`vo${i}`} from={starts[i] + VO_OFFSET}>
+        <Audio src={staticFile(`voz/s${i + 1}.mp3`)} />
+      </Sequence>
+    ))}
     {scenes.map((S, i) => (
       <Sequence key={i} from={starts[i]} durationInFrames={D[i]}>
         <Fade dur={D[i]}><S /></Fade>
