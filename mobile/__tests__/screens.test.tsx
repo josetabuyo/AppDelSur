@@ -24,11 +24,11 @@ describe('Bienvenida', () => {
   it('muestra la identidad del club, el rugby inclusivo y "Sumate" entra directo con Google', async () => {
     const navigation = nav();
     await wrap(<BienvenidaScreen navigation={navigation} route={{ key: 'b', name: 'Bienvenida' } as never} />);
-    expect(screen.getByText('Somos')).toBeTruthy();
-    expect(screen.getByText('Familia')).toBeTruthy();
-    expect(screen.getByText('Pumpas XV')).toBeTruthy();
+    expect(screen.getByText('Viví el')).toBeTruthy();
+    expect(screen.getByText('Club')).toBeTruthy();
+    expect(screen.queryByText(/Pumpas/)).toBeNull();
     expect(screen.getByText('RUGBY INCLUSIVO')).toBeTruthy();
-    expect(screen.getByText(/Vitoria-Gasteiz/)).toBeTruthy();
+    expect(screen.getByText(/Rugby Inclusivo Del Sur/)).toBeTruthy();
     await fireEvent.press(screen.getByTestId('cta-sumate'));
     expect(mockLoginGoogle).toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();

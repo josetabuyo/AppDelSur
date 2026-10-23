@@ -23,7 +23,7 @@ const DEPORTES: { value: Deporte; label: string; emoji: string }[] = [
 const DIVISIONES: Record<Deporte, string[]> = {
   rugby: ['M6', 'M8', 'M10', 'M12', 'M14', 'M15', 'M16', 'M17', 'M19', 'Plantel superior'],
   hockey: ['Infantiles', 'Menores', 'Juveniles', 'Intermedia', 'Primera', 'Mamis'],
-  rugby_inclusivo: ['Pumpas XV'],
+  rugby_inclusivo: ['Infantiles', 'Adultos'],
 };
 
 const CARITAS = ['😞', '🙁', '😐', '🙂', '😍'];
@@ -67,7 +67,7 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
           }
         : {
             titles: ['Contanos de vos', 'Tu club', 'Contacto y charla'],
-            subtitle: 'Solo nombre y apellido son obligatorios. Lo demás nos ayuda un montón.',
+            subtitle: 'Solo nombre y apellido son obligatorios. Lo demás nos sirve para darte un mejor club.',
             nombre: 'Nombre',
             fecha: 'Fecha de nacimiento',
             colegio: '¿A qué colegio vas o fuiste?',
@@ -187,7 +187,7 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
               <Chip key={d.value} label={d.label} emoji={d.emoji} selected={form.deporte === d.value} onPress={() => set('deporte', form.deporte === d.value ? null : d.value)} />
             ))}
           </View>
-          <TextField label="División / categoría" optional value={form.division} onChangeText={(v) => set('division', v)} placeholder="Ej: M10, Plantel superior, Pumpas XV" />
+          <TextField label="División / categoría" optional value={form.division} onChangeText={(v) => set('division', v)} placeholder="Ej: M10, Plantel superior, Inclusivo" />
           {form.deporte ? (
             <View style={[styles.chips, { marginTop: -8, marginBottom: 20 }]}>
               {DIVISIONES[form.deporte].map((d) => (
@@ -198,7 +198,7 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
           <TextField
             highlight
             label={t.colegio}
-            hint="Nos ayuda a saber en qué escuelas estamos, para llegar a más chicos."
+            hint="Así llevamos el club a más escuelas."
             value={form.colegio}
             onChangeText={(v) => set('colegio', v)}
             placeholder="Nombre del colegio"

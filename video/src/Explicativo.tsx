@@ -94,7 +94,7 @@ const S1 = () => (
     <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 50}}>
       <Crest size={520} />
       <Line text="Del Sur" size={260} delay={18} hi={['Sur']} />
-      <div style={{fontFamily: ANTON, fontSize: 92, color: C.white, letterSpacing: 3, opacity: useSp(50)}}>SOMOS FAMILIA</div>
+      <div style={{fontFamily: ANTON, fontSize: 92, color: C.white, letterSpacing: 3, opacity: useSp(50)}}>VIVÍ EL CLUB</div>
       <div style={{fontSize: 90, opacity: useSp(60), transform: `scale(${useSp(60, 8)})`}}>💙🤍💛</div>
     </AbsoluteFill>
   </>
@@ -112,7 +112,7 @@ const S2 = () => {
       <div style={{position: 'absolute', left: 60, right: 60, top: 1040, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center'}}>
         <Line text="Rugby. Hockey." size={170} delay={40} hi={[]} />
         <Line text="Rugby inclusivo." size={140} delay={64} color={C.yellow} />
-        <div style={{marginTop: 24}}><Pill delay={100} bg={C.white} size={44}>Pumpas XV · campeón mundial 2017</Pill></div>
+        <div style={{marginTop: 24}}><Pill delay={100} bg={C.white} size={44}>Invictos 2025 · Primera C</Pill></div>
       </div>
     </>
   );
@@ -176,8 +176,8 @@ const Screen: React.FC<{i: number; f: number}> = ({i, f}) => {
   if (i === 0) return (
     <div style={{...base, background: `linear-gradient(180deg,${C.sky},${C.navy})`, alignItems: 'center', justifyContent: 'center'}}>
       <div style={{width: 200, height: 200, borderRadius: '50%', overflow: 'hidden', background: '#fff', position: 'relative'}}><CrestImg size={200} /></div>
-      <div style={{fontFamily: ANTON, fontSize: 84, color: '#fff', textAlign: 'center', lineHeight: 1}}>BIENVENIDO A <span style={{color: C.yellow}}>LA FAMILIA</span></div>
-      <div style={{fontFamily: INTER, fontWeight: 600, fontSize: 26, color: '#fff', textAlign: 'center'}}>Te invitamos a sumarte</div>
+      <div style={{fontFamily: ANTON, fontSize: 84, color: '#fff', textAlign: 'center', lineHeight: 1}}>VIVÍ EL <span style={{color: C.yellow}}>CLUB</span></div>
+      <div style={{fontFamily: INTER, fontWeight: 600, fontSize: 26, color: '#fff', textAlign: 'center'}}>Sumate a Del Sur</div>
     </div>
   );
   if (i === 1) return (
@@ -249,8 +249,8 @@ const S6 = () => {
     <>
       <Bg a={C.navy} b={C.sky} seed={5} />
       <AbsoluteFill style={{padding: '180px 70px', alignItems: 'center'}}>
-        <Line text="Mejores" size={190} delay={0} />
-        <Line text="decisiones" size={190} delay={8} color={C.yellow} />
+        <Line text="Un club" size={190} delay={0} />
+        <Line text="que te da más" size={150} delay={8} color={C.yellow} />
         <div style={{display: 'flex', flexDirection: 'column', gap: 30, marginTop: 70, width: '100%'}}>
           {items.map(([e, t], i) => {
             const p = useSp(35 + i * 18, 12);
@@ -275,7 +275,7 @@ const S7 = () => {
       <Bg a={C.sky} b={C.navy} seed={6} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 36, padding: 60}}>
         <Line text="Esto recién empieza" size={140} delay={0} />
-        <Line text="Gracias por sumarte" size={140} delay={30} color={C.yellow} />
+        <Line text="Vamos por más" size={140} delay={30} color={C.yellow} />
         <div style={{height: 10}} />
         <Crest size={380} delay={70} />
         <div style={{transform: `scale(${pulse})`, marginTop: 20}}>

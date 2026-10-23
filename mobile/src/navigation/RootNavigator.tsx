@@ -51,7 +51,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer ref={navRef} documentTitle={{ formatter: () => 'Del Sur · Somos familia' }}>
+    <NavigationContainer ref={navRef} documentTitle={{ formatter: () => 'Del Sur · Rugby y Hockey' }}>
       <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper }, animation: 'slide_from_right' }}>
         {status === 'authed' ? (
           <>

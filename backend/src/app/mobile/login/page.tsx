@@ -21,8 +21,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   return (
     <main className="hero">
       <img src="/escudo-delsur-ig.png" alt="Escudo Del Sur" />
-      <h1>Somos <span>familia</span></h1>
-      <p>Entrá con tu cuenta y sumate a la comunidad de Del Sur Rugby Club.</p>
+      <h1>Viví el <span>club</span></h1>
+      <p>Entrá con tu cuenta de Google y sumate a Del Sur Rugby Club.</p>
       <div className="card">
         {hasGoogle ? (
           <form action={async () => { "use server"; await signIn("google", { redirectTo: target }); }}>

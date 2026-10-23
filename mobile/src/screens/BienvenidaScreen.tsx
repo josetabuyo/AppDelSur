@@ -75,25 +75,25 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
           </View>
         </View>
         <View style={styles.heroText}>
-          <Text style={styles.somos}>Somos</Text>
-          <Text style={[styles.familia, { fontSize: famSize, lineHeight: famSize * 1.02 }]}>Familia</Text>
+          <Text style={styles.somos}>Viví el</Text>
+          <Text style={[styles.familia, { fontSize: famSize, lineHeight: famSize * 1.02 }]}>Club</Text>
           <Stripes width={96} />
         </View>
 
         <View style={styles.body}>
           <Text style={styles.lead}>
-            Rugby, hockey y rugby inclusivo. Un club de barrio donde <Text style={styles.leadStrong}>todos tienen lugar</Text>.
+            Rugby, hockey y rugby inclusivo. Un club que crece: <Text style={styles.leadStrong}>ascendimos invictos a Primera C</Text> y vamos por más.
           </Text>
 
           <LinearGradient colors={[colors.celeste, '#1C7FC0', colors.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.pumpas}>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>RUGBY INCLUSIVO</Text>
             </View>
-            <Text style={styles.pumpasTitle}>Pumpas XV</Text>
+            <Text style={styles.pumpasTitle}>Juegan todos</Text>
             <Text style={styles.pumpasText}>
-              Campeones del International Mixed Ability Rugby 2017 en Vitoria-Gasteiz. En Del Sur juega todo el que quiera jugar.
+              Rugby Inclusivo Del Sur: nuestro equipo, con cancha, camiseta y lugar para cada uno.
             </Text>
-            <Text style={styles.trophy}>🏆</Text>
+            <Text style={styles.trophy}>🤝</Text>
           </LinearGradient>
 
           <View style={styles.sports}>
@@ -106,7 +106,7 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
           </View>
 
           <View style={styles.quote}>
-            <Text style={styles.quoteText}>“Súmate a esta familia.”</Text>
+            <Text style={styles.quoteText}>Vení a disfrutar el club</Text>
             <Text style={styles.quoteSub}>Camino de Cintura 9399 · 9 de Abril · Parque Indoamericano</Text>
           </View>
         </View>

@@ -11,7 +11,7 @@ import { colors, display, fonts } from '../theme';
 
 export const SHARE_TEXT =
   `¡Me sumé a la app de Del Sur! 💙🤍💛\n` +
-  `Es la app del club, hecha por el club y para el club. Son dos minutos: así sabemos cuántos somos y a qué colegio van los chicos.\n` +
+  `Es la app del club, hecha por el club y para el club. En dos minutos el club te conoce y te puede dar más.\n` +
   `Sumate vos también 👉 ${SHARE_URL}`;
 
 export default function GraciasScreen({ navigation, route }: ScreenProps<'Gracias'>) {
@@ -35,16 +35,16 @@ export default function GraciasScreen({ navigation, route }: ScreenProps<'Gracia
               Esta es <Text style={styles.strong}>la app del club, hecha por el club y para el club</Text>. Sin otro interés que Del Sur.
             </Text>
             <Text style={styles.p}>
-              Hoy no sabemos bien cuántos somos, quiénes están activos ni a qué colegio van los chicos. Con lo que nos contaste vamos a poder
-              tomar mejores decisiones: llegar a más colegios, sumar un profe, llamar a los que dejaron de venir.
+              Con lo que nos contaste, el club te conoce mejor y puede darte más: más profes, más colegios, mejores propuestas, y que
+              nadie quede afuera en el camino.
             </Text>
             <Text style={styles.p}>
               <Text style={styles.yellow}>Esto recién empieza.</Text> Después vienen perfiles, asistencia y mucho más. Los que empezamos el
               camino queremos que vengan otros mejores a seguirlo.
             </Text>
             <View style={styles.cierre}>
-              <Text style={styles.big}>Gracias por sumarte</Text>
-              <Text style={[styles.big, { color: colors.celeste }]}>Somos familia</Text>
+              <Text style={styles.big}>Bienvenido/a a Del Sur</Text>
+              <Text style={[styles.big, { color: colors.celeste }]}>Vamos por más</Text>
               <Text style={styles.hearts}>💙🤍💛</Text>
             </View>
           </View>

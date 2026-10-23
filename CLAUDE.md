@@ -26,7 +26,7 @@ Time box acordado en la charla: **una semana**. Primera versión para que los am
 
 - **Del Sur Rugby Club** (rugby y hockey). Camino de Cintura 9399, 9 de Abril, Esteban Echeverría, Buenos Aires — zona Ciudad Evita / Ezeiza / Lugano / Villa Riachuelo, al sur de CABA, fuera de ella. También usan el **Parque Indoamericano**.
 - Instagram oficial **@delsurclub** (5.7k seguidores): "Cuenta oficial Del Sur Rugby y Hockey · SOMOS FAMILIA 💙🤍💛 · Súmate a Del Sur". Hay un Google Form en la bio (`forms.gle/41uG7Vp4XfJ3UBMP7`) — probablemente el "formulario" que hoy pide el club.
-- Facebook: "Rugby Inclusivo - Del Sur Rugby Club" (~5k likes). Equipo de rugby inclusivo **Pumpas XV** (campeón International Mixed Ability Rugby 2017, Vitoria-Gasteiz). El rugby inclusivo es parte importante de la identidad: tiene que estar en la bienvenida.
+- Facebook: "Rugby Inclusivo - Del Sur Rugby Club" (~5k likes). **Ojo: Pumpas XV NO es del club** (corrección de José y Lucas, 2026-10-23). El club tiene su propio **Rugby Inclusivo Del Sur**, parte importante de la identidad.
 - URBA: club invitado. 2025: invicto en Segunda (26/26), ascendió a Primera C. (ESPN)
 - Sitio `delsurclub.com` **expiró** (redirige a expireddomains). No contar con él.
 - **Estética** (capturas en `referencias/`): escudo = escudo celeste con estrella/cruz amarilla, borde azul marino, banda "DEL SUR". Paleta aproximada: celeste `#2AA7DF`, azul marino `#0C3C6E`, amarillo `#F2D94E`, blanco. Posteos con tipografía display condensada en mayúsculas sobre foto ("SUMATE A LA VIDA DE CLUB", "SÚMATE A ESTA FAMILIA"). Para la imagen de bienvenida: usar/adaptar una foto real de las redes (collage); si hace falta retocar, retocar poco.
