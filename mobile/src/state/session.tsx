@@ -11,6 +11,9 @@ type SessionValue = {
   user: User | null;
   registros: Registro[];
   upgradeRequired: string | false; // false o la minAppVersion pedida
+  /** Recién volvió del login: la bienvenida lo pasa directo a "¿sos jugador?" una sola vez. */
+  freshLogin: boolean;
+  clearFreshLogin: () => void;
   loginGoogle: () => Promise<void>;
   loginDev: () => Promise<void>;
   logout: () => Promise<void>;
@@ -26,6 +29,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [registros, setRegistros] = useState<Registro[]>([]);
   const [upgradeRequired, setUpgrade] = useState<string | false>(false);
+  const [freshLogin, setFreshLogin] = useState(false);
 
   useEffect(() => {
     onUpgradeRequired((min) => setUpgrade(min ?? 'nueva'));
@@ -44,7 +48,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       const fromRedirect = takeTokenFromLocation();
-      if (fromRedirect) await setToken(fromRedirect);
+      if (fromRedirect) {
+        await setToken(fromRedirect);
+        setFreshLogin(true);
+      }
       const saved = fromRedirect ?? (await getToken().catch(() => null));
       if (!saved) return setStatus('anon');
       try {
@@ -59,6 +66,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const loginWith = useCallback(
     async (t: string) => {
       await setToken(t);
+      setFreshLogin(true);
       await adopt(t);
     },
     [adopt],
@@ -71,6 +79,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       user,
       registros,
       upgradeRequired,
+      freshLogin,
+      clearFreshLogin: () => setFreshLogin(false),
       loginGoogle: async () => loginWith(await loginWithBrowser()),
       loginDev: async () => {
         const r = await api.devLogin('prueba@delsur.dev', 'Socia de Prueba');
@@ -81,6 +91,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setTok(null);
         setUser(null);
         setRegistros([]);
+        setFreshLogin(false);
         setStatus('anon');
       },
       refresh: async () => {
@@ -88,7 +99,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       },
       addRegistro: (r) => setRegistros((prev) => [...prev, r]),
     }),
-    [status, token, user, registros, upgradeRequired, loginWith, adopt],
+    [status, token, user, registros, upgradeRequired, freshLogin, loginWith, adopt],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

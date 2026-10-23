@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
@@ -32,12 +32,21 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
   const bottomH = Math.round(width / 2.5);
   const heroH = topH + 3 + bottomH;
   const famSize = Math.min(width * 0.25, 108);
-  const { loginGoogle } = useSession();
+  const { status, user, loginGoogle, freshLogin, clearFreshLogin } = useSession();
+  const authed = status === 'authed';
+
+  // Recién logueado: sin pararse en la bienvenida, directo a "¿sos jugador?" (con la bienvenida debajo para volver).
+  useEffect(() => {
+    if (!authed || !freshLogin) return;
+    clearFreshLogin();
+    navigation.navigate('SosJugador');
+  }, [authed, freshLogin, clearFreshLogin, navigation]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // "Sumate" entra directo con Google: sin pantalla intermedia. En modo prueba sigue la pantalla de login.
   const sumate = async () => {
+    if (authed) return navigation.navigate('SosJugador');
     if (DEV_LOGIN) return navigation.navigate('Login');
     setError(null);
     setBusy(true);
@@ -118,8 +127,10 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
         style={[styles.ctaBar, { paddingBottom: insets.bottom + 16 }]}
       >
         {error ? <Text style={styles.ctaError}>{error}</Text> : null}
-        <Button label="Sumate" big onPress={sumate} loading={busy} testID="cta-sumate" />
-        <Text style={styles.ctaHint}>Entrás con tu cuenta de Google · dos minutos 💙🤍💛</Text>
+        <Button label={authed ? 'Entrar' : 'Sumate'} big onPress={sumate} loading={busy} testID="cta-sumate" />
+        <Text style={styles.ctaHint}>
+          {authed ? `Ya estás adentro${user?.name ? `, ${user.name.split(' ')[0]}` : ''} 💙🤍💛` : 'Entrás con tu cuenta de Google · dos minutos 💙🤍💛'}
+        </Text>
       </LinearGradient>
     </View>
   );

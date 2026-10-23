@@ -55,6 +55,8 @@ export default function RootNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper }, animation: 'slide_from_right' }}>
         {status === 'authed' ? (
           <>
+            {/* La bienvenida es el inicio siempre, también con sesión: así todos ven las novedades. */}
+            <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
             <Stack.Screen name="SosJugador" component={SosJugadorScreen} />
             <Stack.Screen name="Cuestionario" component={CuestionarioScreen} />
             <Stack.Screen name="Enrolamiento" component={EnrolamientoScreen} />

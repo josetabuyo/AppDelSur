@@ -5,8 +5,12 @@ import BienvenidaScreen from '../src/screens/BienvenidaScreen';
 import SosJugadorScreen from '../src/screens/SosJugadorScreen';
 
 const mockLoginGoogle = jest.fn(async () => {});
+const mockClearFreshLogin = jest.fn();
+let mockSession = { status: 'anon', freshLogin: false };
 jest.mock('../src/state/session', () => ({
   useSession: () => ({
+    ...mockSession,
+    clearFreshLogin: mockClearFreshLogin,
     loginGoogle: mockLoginGoogle,
     user: { id: 'u1', email: 'jose@gmail.com', name: 'José Tabuyo', image: null },
     registros: [{ id: 'r1', nombre: 'Juan', apellido: 'Tabuyo', tipo: 'jugador', cargaPara: 'hijo', createdAt: '' }],
@@ -32,6 +36,29 @@ describe('Bienvenida', () => {
     await fireEvent.press(screen.getByTestId('cta-sumate'));
     expect(mockLoginGoogle).toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  it('con sesión también es el inicio: muestra la bienvenida y "Entrar" sigue a ¿sos jugador?', async () => {
+    mockSession = { status: 'authed', freshLogin: false };
+    mockLoginGoogle.mockClear();
+    const navigation = nav();
+    await wrap(<BienvenidaScreen navigation={navigation} route={{ key: 'b', name: 'Bienvenida' } as never} />);
+    expect(screen.getByText('Viví el')).toBeTruthy();
+    expect(screen.getByText(/Ya estás adentro, José/)).toBeTruthy();
+    expect(navigation.navigate).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('cta-sumate'));
+    expect(navigation.navigate).toHaveBeenCalledWith('SosJugador');
+    expect(mockLoginGoogle).not.toHaveBeenCalled();
+    mockSession = { status: 'anon', freshLogin: false };
+  });
+
+  it('recién logueado pasa directo a ¿sos jugador?, una sola vez', async () => {
+    mockSession = { status: 'authed', freshLogin: true };
+    const navigation = nav();
+    await wrap(<BienvenidaScreen navigation={navigation} route={{ key: 'b', name: 'Bienvenida' } as never} />);
+    expect(mockClearFreshLogin).toHaveBeenCalled();
+    expect(navigation.navigate).toHaveBeenCalledWith('SosJugador');
+    mockSession = { status: 'anon', freshLogin: false };
   });
 });
 
