@@ -9,11 +9,9 @@ const {fontFamily: INTER} = loadBody('normal', {weights: ['600', '800']});
 const C = {sky: '#2AA7DF', navy: '#0C3C6E', yellow: '#F2D94E', white: '#FFFFFF'};
 
 // Scene lengths (frames @30fps)
-const D = [150, 225, 180, 165, 300, 210, 220];
-// Narración (voz es-AR Tomás, edge-tts): un clip por escena, 10 frames después de que arranca.
-const VO_OFFSET = 10;
-// Apagada: la voz sintética resultó fría (Lucas). Se prende cuando grabe alguien del club (voz/s1..s7).
-const NARRACION = false;
+// Reel en 8 placas (propuesta Lucas + Maia): "Más conectados. Más organizados. Más Del Sur."
+const D = [80, 120, 110, 140, 120, 110, 110, 160];
+// Sin narración: la voz sintética resultó fría (Lucas). Cuando grabe alguien del club, va un <Audio> por placa.
 const starts = D.reduce<number[]>((a, d, i) => [...a, (a[i - 1] ?? 0) + (i ? D[i - 1] : 0)], []);
 export const TOTAL = D.reduce((a, b) => a + b, 0);
 
@@ -91,72 +89,6 @@ const Pill: React.FC<{children: React.ReactNode; delay: number; bg?: string; col
   return <div style={{display: 'inline-block', background: bg, color, fontFamily: ANTON, fontSize: size, textTransform: 'uppercase', padding: '14px 40px', borderRadius: 999, transform: `scale(${p})`, opacity: p, letterSpacing: 2}}>{children}</div>;
 };
 
-// ---------- Scenes ----------
-const S1 = () => (
-  <>
-    <Bg a={C.sky} b={C.navy} />
-    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 50}}>
-      <Crest size={520} />
-      <Line text="Del Sur" size={260} delay={18} hi={['Sur']} />
-      <div style={{fontFamily: ANTON, fontSize: 92, color: C.white, letterSpacing: 3, opacity: useSp(50)}}>VIVÍ EL CLUB</div>
-      <div style={{fontSize: 90, opacity: useSp(60), transform: `scale(${useSp(60, 8)})`}}>💙🤍💛</div>
-    </AbsoluteFill>
-  </>
-);
-
-const S2 = () => {
-  const f = useCurrentFrame();
-  return (
-    <>
-      <Bg a={C.navy} b="#061f3b" seed={1} />
-      <Photo n={1} w={450} h={400} x={70} y={90} delay={5} rot={-6} />
-      <Photo n={2} w={450} h={400} x={560} y={150} delay={14} rot={5} tone={C.sky} />
-      <Photo n={3} w={450} h={400} x={70} y={520} delay={23} rot={4} tone={C.sky} />
-      <Photo n={4} w={450} h={400} x={560} y={580} delay={32} rot={-5} />
-      <div style={{position: 'absolute', left: 60, right: 60, top: 1040, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center'}}>
-        <Line text="Rugby. Hockey." size={170} delay={40} hi={[]} />
-        <Line text="Rugby inclusivo." size={140} delay={64} color={C.yellow} />
-        <div style={{marginTop: 24}}><Pill delay={100} bg={C.white} size={44}>Para todas las edades</Pill></div>
-      </div>
-    </>
-  );
-};
-
-const S3 = () => {
-  const items = ['Rugby y hockey, todas las divisiones', 'Los datos del club al día', 'Mejores decisiones'];
-  return (
-    <>
-      <Bg a="#10243f" b="#04101f" seed={2} />
-      <AbsoluteFill style={{padding: '220px 70px', alignItems: 'center'}}>
-        <Line text="Una nueva etapa" size={150} delay={0} />
-        <Line text="para Del Sur" size={170} delay={10} color={C.yellow} />
-        <div style={{display: 'flex', flexDirection: 'column', gap: 34, marginTop: 110, alignItems: 'flex-start'}}>
-          {items.map((t, i) => {
-            const p = useSp(40 + i * 22, 14);
-            return <div key={i} style={{fontFamily: ANTON, fontSize: 72, color: C.white, textTransform: 'uppercase', transform: `translateX(${(1 - p) * -900}px)`, borderLeft: `14px solid ${C.yellow}`, paddingLeft: 30}}>{t}</div>;
-          })}
-        </div>
-      </AbsoluteFill>
-    </>
-  );
-};
-
-const S4 = () => (
-  <>
-    <Bg a={C.yellow} b="#f7ec9a" seed={3} />
-    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 40, padding: 70}}>
-      <Crest size={300} />
-      <Line text="Presentamos" size={120} color={C.navy} delay={10} />
-      <Line text="la app del club" size={190} color={C.navy} delay={20} />
-      <div style={{background: C.navy, padding: '30px 50px', borderRadius: 30, transform: `rotate(-2deg) scale(${useSp(60)})`}}>
-        <Line text="Hecha por el club." size={80} delay={60} />
-        <Line text="Para el club." size={80} delay={70} color={C.yellow} />
-      </div>
-      <div style={{fontFamily: INTER, fontWeight: 600, fontSize: 40, color: C.navy, opacity: useSp(95)}}>Sin otro interés que el club.</div>
-    </AbsoluteFill>
-  </>
-);
-
 // ----- Phone -----
 const Btn: React.FC<{children: React.ReactNode; bg?: string; color?: string; hl?: boolean; f: number}> = ({children, bg = C.sky, color = C.white, hl, f}) => (
   <div style={{background: bg, color, fontFamily: INTER, fontWeight: 800, fontSize: 30, padding: '24px 0', borderRadius: 20, textAlign: 'center', border: '3px solid rgba(12,60,110,.15)', transform: hl ? `scale(${1 + Math.max(0, Math.sin(f / 4)) * 0.04})` : undefined, boxShadow: hl ? `0 0 0 ${6 + Math.sin(f / 4) * 4}px rgba(242,217,78,.7)` : undefined}}>{children}</div>
@@ -176,7 +108,8 @@ const Screen: React.FC<{i: number; f: number}> = ({i, f}) => {
     <div style={{...base, background: `linear-gradient(180deg,${C.sky},${C.navy})`, alignItems: 'center', justifyContent: 'center'}}>
       <div style={{width: 200, height: 200, borderRadius: '50%', overflow: 'hidden', background: '#fff', position: 'relative'}}><CrestImg size={200} /></div>
       <div style={{fontFamily: ANTON, fontSize: 84, color: '#fff', textAlign: 'center', lineHeight: 1}}>VIVÍ EL <span style={{color: C.yellow}}>CLUB</span></div>
-      <div style={{fontFamily: INTER, fontWeight: 600, fontSize: 26, color: '#fff', textAlign: 'center'}}>Sumate a Del Sur</div>
+      <div style={{fontFamily: INTER, fontWeight: 600, fontSize: 26, color: '#fff', textAlign: 'center'}}>Llegó la nueva app del club</div>
+      <div style={{width: '80%'}}><Btn f={f} bg={C.yellow} color={C.navy} hl>SUMATE</Btn></div>
     </div>
   );
   if (i === 1) return (
@@ -213,50 +146,90 @@ const Screen: React.FC<{i: number; f: number}> = ({i, f}) => {
   );
 };
 
-const S5 = () => {
+// Celular con una pantalla real de la app
+const Phone: React.FC<{i: number; delay?: number}> = ({i, delay = 0}) => {
   const f = useCurrentFrame();
-  const per = 48;
-  const caps = ['Instalás la app', 'Entrás con Google', 'Contestás si jugás', 'Unas preguntas · o cargás a tu hijo/a', 'Listo. ¡Gracias!'];
-  const idx = Math.min(4, Math.floor((f - 60) / per));
-  const si = Math.max(0, idx);
-  const local = f - 60 - si * per;
-  const p = useSp(0, 12);
-  const trans = interpolate(Math.max(0, local), [0, 10], [1, 0], {extrapolateRight: 'clamp'});
+  const p = useSp(delay, 12);
   return (
-    <>
-      <Bg a={C.sky} b={C.navy} seed={4} />
-      <AbsoluteFill style={{alignItems: 'center', paddingTop: 110}}>
-        <Line text="1 minuto." size={170} delay={0} hi={['minuto.']} />
-        <div style={{fontFamily: INTER, fontWeight: 800, fontSize: 44, color: '#fff', marginTop: 14, opacity: useSp(12)}}>Android y iPhone · sin vueltas</div>
-        <div style={{marginTop: 50, width: 540, height: 1060, borderRadius: 80, background: '#0a0f1a', padding: 18, boxShadow: '0 50px 120px rgba(0,0,0,.55)', transform: `translateY(${(1 - p) * 900}px) rotate(${(1 - p) * 10}deg)`}}>
-          <div style={{position: 'relative', width: '100%', height: '100%', borderRadius: 64, overflow: 'hidden', background: '#fff'}}>
-            <div style={{position: 'absolute', inset: 0, transform: `translateX(${trans * 60}px)`, opacity: 1 - trans * 0.6}}><Screen i={si} f={Math.max(0, local)} /></div>
-            <div style={{position: 'absolute', top: 18, left: '50%', width: 150, height: 36, marginLeft: -75, background: '#0a0f1a', borderRadius: 20, zIndex: 3}} />
-          </div>
-        </div>
-        <div style={{position: 'absolute', bottom: 70}}>
-          {f > 55 && <Pill key={si} delay={0} bg={C.yellow} size={46}>{caps[si]}</Pill>}
-        </div>
-      </AbsoluteFill>
-    </>
+    <div style={{width: 500, height: 980, borderRadius: 76, background: '#0a0f1a', padding: 16, boxShadow: '0 50px 120px rgba(0,0,0,.55)', transform: `translateY(${(1 - p) * 900}px) rotate(${(1 - p) * 10}deg)`}}>
+      <div style={{position: 'relative', width: '100%', height: '100%', borderRadius: 60, overflow: 'hidden', background: '#fff'}}>
+        <Screen i={i} f={Math.max(0, f - delay)} />
+        <div style={{position: 'absolute', top: 18, left: '50%', width: 140, height: 34, marginLeft: -70, background: '#0a0f1a', borderRadius: 20, zIndex: 3}} />
+      </div>
+    </div>
   );
 };
 
-const S6 = () => {
-  const items = [['👨‍🏫', 'Profes y entrenamientos'], ['🏫', 'Colegios y barrios'], ['🏉', 'Propuestas para cada división']];
+// ---------- Placas ----------
+const R1 = () => (
+  <>
+    <Bg a={C.sky} b={C.navy} />
+    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 60}}>
+      <Crest size={460} />
+      <Line text="Del Sur" size={200} delay={10} hi={['Sur']} />
+      <Line text="sigue creciendo" size={120} delay={22} />
+    </AbsoluteFill>
+  </>
+);
+
+const R2 = () => (
+  <>
+    <Bg a={C.navy} b="#061f3b" seed={1} />
+    <Photo n={1} w={450} h={400} x={70} y={90} delay={2} rot={-6} />
+    <Photo n={2} w={450} h={400} x={560} y={150} delay={8} rot={5} tone={C.sky} />
+    <Photo n={3} w={450} h={400} x={70} y={520} delay={14} rot={4} tone={C.sky} />
+    <Photo n={4} w={450} h={400} x={560} y={580} delay={20} rot={-5} />
+    <div style={{position: 'absolute', left: 60, right: 60, top: 1090, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center'}}>
+      <Line text="Una nueva etapa." size={140} delay={26} />
+      <Line text="Un club cada vez más conectado." size={96} delay={46} color={C.yellow} />
+    </div>
+  </>
+);
+
+const R3 = () => (
+  <>
+    <Bg a={C.sky} b={C.navy} seed={2} />
+    <AbsoluteFill style={{alignItems: 'center', paddingTop: 110, gap: 50}}>
+      <div style={{display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center'}}>
+        <Line text="Llegó la nueva app del club." size={100} delay={0} />
+        <Line text="Y vos sos parte." size={120} delay={20} color={C.yellow} />
+      </div>
+      <Phone i={0} delay={10} />
+    </AbsoluteFill>
+  </>
+);
+
+const R4 = () => (
+  <>
+    <Bg a={C.navy} b={C.sky} seed={3} />
+    <AbsoluteFill style={{alignItems: 'center', paddingTop: 100, gap: 46}}>
+      <div style={{display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center'}}>
+        <Pill delay={0} size={50}>Primer paso: descargala</Pill>
+        <div style={{height: 14}} />
+        <Line text="Cargá y actualizá los datos de tu familia." size={86} delay={14} />
+      </div>
+      <Phone i={3} delay={20} />
+    </AbsoluteFill>
+  </>
+);
+
+const R5 = () => {
+  const items = [['🪪', 'Datos de tu familia', 'HOY'], ['🎟️', 'Ingreso al club', 'PRÓXIMAMENTE'], ['📅', 'Eventos', 'PRÓXIMAMENTE'], ['📣', 'Información del club', 'PRÓXIMAMENTE']];
   return (
     <>
-      <Bg a={C.navy} b={C.sky} seed={5} />
-      <AbsoluteFill style={{padding: '180px 70px', alignItems: 'center'}}>
-        <Line text="Mejores" size={190} delay={0} />
-        <Line text="decisiones" size={190} delay={8} color={C.yellow} />
-        <div style={{display: 'flex', flexDirection: 'column', gap: 30, marginTop: 70, width: '100%'}}>
-          {items.map(([e, t], i) => {
-            const p = useSp(35 + i * 18, 12);
+      <Bg a="#10243f" b="#04101f" seed={4} />
+      <AbsoluteFill style={{padding: '200px 70px', alignItems: 'center'}}>
+        <Line text="Una app." size={170} delay={0} />
+        <Line text="Distintas instancias." size={120} delay={12} color={C.yellow} />
+        <div style={{display: 'flex', flexDirection: 'column', gap: 28, marginTop: 80, width: '100%'}}>
+          {items.map(([e, t, tag], i) => {
+            const p = useSp(30 + i * 14, 12);
+            const hoy = i === 0;
             return (
-              <div key={i} style={{display: 'flex', alignItems: 'center', gap: 30, background: 'rgba(255,255,255,.95)', borderRadius: 40, padding: '34px 44px', transform: `translateX(${(1 - p) * 1200}px)`}}>
-                <div style={{fontSize: 90}}>{e}</div>
-                <div style={{fontFamily: ANTON, fontSize: 62, color: C.navy, textTransform: 'uppercase', lineHeight: 1.05}}>{t}</div>
+              <div key={i} style={{display: 'flex', alignItems: 'center', gap: 28, background: hoy ? C.yellow : 'rgba(255,255,255,.95)', borderRadius: 36, padding: '30px 40px', transform: `translateX(${(1 - p) * 1200}px)`}}>
+                <div style={{fontSize: 76}}>{e}</div>
+                <div style={{fontFamily: ANTON, fontSize: 60, color: C.navy, textTransform: 'uppercase', flex: 1}}>{t}</div>
+                <div style={{fontFamily: INTER, fontWeight: 800, fontSize: 24, color: hoy ? C.navy : '#5a7a99', letterSpacing: 2}}>{tag}</div>
               </div>
             );
           })}
@@ -266,36 +239,55 @@ const S6 = () => {
   );
 };
 
-const S7 = () => {
+const R6 = () => (
+  <>
+    <Bg a={C.yellow} b="#f7ec9a" seed={5} />
+    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 30}}>
+      <Line text="Más organización." size={150} delay={0} color={C.navy} />
+      <Line text="Más conexión." size={150} delay={18} color={C.navy} />
+      <Line text="Más Del Sur." size={190} delay={36} color={C.sky} />
+    </AbsoluteFill>
+  </>
+);
+
+const R7 = () => (
+  <>
+    <Bg a={C.navy} b={C.sky} seed={6} />
+    <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 50, padding: 70}}>
+      <div style={{display: 'flex', gap: 40, fontSize: 150, transform: `scale(${useSp(0, 10)})`}}>🤖🍏</div>
+      <Line text="Android o iPhone." size={150} delay={8} />
+      <Line text="Descargala y completá tus datos." size={96} delay={26} color={C.yellow} />
+      <div style={{marginTop: 30}}><Pill delay={50} bg={C.white} size={58}>appdelsur.vercel.app</Pill></div>
+    </AbsoluteFill>
+  </>
+);
+
+const R8 = () => {
   const f = useCurrentFrame();
   const pulse = 1 + Math.max(0, Math.sin(f / 5)) * 0.04;
   return (
     <>
-      <Bg a={C.sky} b={C.navy} seed={6} />
-      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 36, padding: 60}}>
-        <Line text="Esto recién empieza" size={140} delay={0} />
-        <Line text="Vamos por más" size={140} delay={30} color={C.yellow} />
-        <div style={{height: 10}} />
-        <Crest size={380} delay={70} />
-        <div style={{transform: `scale(${pulse})`, marginTop: 20}}>
-          <Pill delay={100} size={96}>Sumate a Del Sur</Pill>
+      <Bg a={C.sky} b={C.navy} seed={7} />
+      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 26, padding: 60}}>
+        <Crest size={340} delay={0} />
+        <div style={{height: 20}} />
+        <Line text="Más conectados." size={130} delay={14} />
+        <Line text="Más organizados." size={130} delay={26} />
+        <Line text="Más Del Sur." size={160} delay={38} color={C.yellow} />
+        <div style={{transform: `scale(${pulse})`, marginTop: 40, display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center'}}>
+          <Pill delay={70} size={64}>Descargá la app</Pill>
+          <Pill delay={80} bg={C.white} size={64}>Actualizá tus datos</Pill>
         </div>
-        <div style={{fontFamily: INTER, fontWeight: 600, fontSize: 36, color: '#fff', opacity: useSp(125)}}>La app del club · hecha por el club, para el club 💙🤍💛</div>
       </AbsoluteFill>
     </>
   );
 };
 
-const scenes = [S1, S2, S3, S4, S5, S6, S7];
+const scenes = [R1, R2, R3, R4, R5, R6, R7, R8];
 export const Explicativo: React.FC = () => (
   <AbsoluteFill style={{background: C.navy}}>
-    {/* Música procedural libre de derechos (make_music.py de relay-motion-video), ya baja sola bajo la voz. */}
+    {/* Música procedural libre de derechos (make_music.py de relay-motion-video). */}
     <Audio src={staticFile('musica.wav')} volume={0.55} />
-    {NARRACION && D.map((_, i) => (
-      <Sequence key={`vo${i}`} from={starts[i] + VO_OFFSET}>
-        <Audio src={staticFile(`voz/s${i + 1}.mp3`)} />
-      </Sequence>
-    ))}
     {scenes.map((S, i) => (
       <Sequence key={i} from={starts[i]} durationInFrames={D[i]}>
         <Fade dur={D[i]}><S /></Fade>

@@ -43,8 +43,8 @@ export default function GraciasScreen({ navigation, route }: ScreenProps<'Gracia
               camino queremos que vengan otros mejores a seguirlo.
             </Text>
             <View style={styles.cierre}>
-              <Text style={styles.big}>Bienvenido/a a Del Sur</Text>
-              <Text style={[styles.big, { color: colors.celeste }]}>Vamos por más</Text>
+              <Text style={styles.big}>Más conectados. Más organizados.</Text>
+              <Text style={[styles.big, { color: colors.celeste }]}>Más Del Sur</Text>
               <Text style={styles.hearts}>💙🤍💛</Text>
             </View>
           </View>

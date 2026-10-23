@@ -91,7 +91,7 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
 
         <View style={styles.body}>
           <Text style={styles.lead}>
-            Rugby, hockey y rugby inclusivo, para todas las edades. <Text style={styles.leadStrong}>Lanzamos la app del club</Text>: en dos minutos nos contás de vos y el club toma mejores decisiones.
+            Rugby, hockey y rugby inclusivo, para todas las edades. <Text style={styles.leadStrong}>Llegó la nueva app del club</Text>: cargá y actualizá los datos de tu familia en dos minutos.
           </Text>
 
           <LinearGradient colors={[colors.celeste, '#1C7FC0', colors.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.pumpas}>
