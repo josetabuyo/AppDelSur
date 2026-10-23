@@ -1,7 +1,7 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { Crest } from '../components/Crest';
 import ActualizarScreen from '../screens/ActualizarScreen';
 import BienvenidaScreen from '../screens/BienvenidaScreen';
@@ -15,9 +15,30 @@ import { colors } from '../theme';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const navRef = createNavigationContainerRef<RootStackParamList>();
+
+/**
+ * Web: el "atrás" del navegador navega dentro de la app y nunca sale de ella. Sin esto, después del
+ * login el historial tiene las páginas de Google y "atrás" lleva a elegir cuenta otra vez.
+ * Mantenemos siempre una entrada propia arriba del historial y la reponemos en cada popstate.
+ */
+function useWebBackInsideApp() {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const guard = () => window.history.pushState({ delsur: true }, '', window.location.href);
+    guard();
+    const onPop = () => {
+      guard();
+      if (navRef.isReady() && navRef.canGoBack()) navRef.goBack();
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+}
 
 export default function RootNavigator() {
   const { status, upgradeRequired } = useSession();
+  useWebBackInsideApp();
 
   if (upgradeRequired) return <ActualizarScreen />;
   if (status === 'loading') {
@@ -30,7 +51,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer documentTitle={{ formatter: () => 'Del Sur · Somos familia' }}>
+    <NavigationContainer ref={navRef} documentTitle={{ formatter: () => 'Del Sur · Somos familia' }}>
       <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper }, animation: 'slide_from_right' }}>
         {status === 'authed' ? (
           <>

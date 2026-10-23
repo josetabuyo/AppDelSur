@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
@@ -94,6 +94,17 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
   };
 
   const back = () => (step === 0 ? navigation.goBack() : goStep(step - 1));
+
+  // "Atrás" del sistema (Android o navegador) vuelve un paso del cuestionario, no a la pantalla anterior.
+  useEffect(
+    () =>
+      navigation.addListener('beforeRemove', (e) => {
+        if (step === 0 || e.data.action.type !== 'GO_BACK') return;
+        e.preventDefault();
+        goStep(step - 1);
+      }),
+    [navigation, step],
+  );
 
   const submit = async () => {
     const e = validateJugador(form);
@@ -201,7 +212,6 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
       {step === 2 && (
         <>
           <TextField label={t.telefono} optional value={form.telefono} onChangeText={(v) => set('telefono', v)} error={errors.telefono} keyboardType="phone-pad" placeholder="Ej: 11 5555 5555" textContentType="telephoneNumber" />
-          <TextField label={t.email} optional value={form.email} onChangeText={(v) => set('email', v)} error={errors.email} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
           <TextField label={t.familia} optional value={form.familiaEnClub} onChangeText={(v) => set('familiaEnClub', v)} placeholder="Ej: hermano Tomás en M12" />
 
           <SectionLabel>{t.contento}</SectionLabel>

@@ -73,7 +73,6 @@ export default function EnrolamientoScreen({ navigation }: ScreenProps<'Enrolami
       </View>
       {vinculo ? <TextField label="Contanos un poco más" optional value={form.vinculoDetalle} onChangeText={(v) => set('vinculoDetalle', v)} placeholder={vinculo.detalle} /> : null}
       <TextField label="Teléfono" optional value={form.telefono} onChangeText={(v) => set('telefono', v)} error={errors.telefono} keyboardType="phone-pad" placeholder="Ej: 11 5555 5555" />
-      <TextField label="Mail" optional value={form.email} onChangeText={(v) => set('email', v)} error={errors.email} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
     </FormScaffold>
   );
 }

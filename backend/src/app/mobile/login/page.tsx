@@ -15,6 +15,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   }
   const target = `/mobile/callback?redirect=${encodeURIComponent(r)}`;
   if ((await auth())?.user?.email) redirect(target);
+  // En producción (sin "entrar de prueba") no hay nada que elegir: directo a Google.
+  if (hasGoogle && !devLoginEnabled()) redirect(`/mobile/google?redirect=${encodeURIComponent(r)}`);
 
   return (
     <main className="hero">

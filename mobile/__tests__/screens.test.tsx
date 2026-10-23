@@ -4,8 +4,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import BienvenidaScreen from '../src/screens/BienvenidaScreen';
 import SosJugadorScreen from '../src/screens/SosJugadorScreen';
 
+const mockLoginGoogle = jest.fn(async () => {});
 jest.mock('../src/state/session', () => ({
   useSession: () => ({
+    loginGoogle: mockLoginGoogle,
     user: { id: 'u1', email: 'jose@gmail.com', name: 'José Tabuyo', image: null },
     registros: [{ id: 'r1', nombre: 'Juan', apellido: 'Tabuyo', tipo: 'jugador', cargaPara: 'hijo', createdAt: '' }],
     logout: jest.fn(),
@@ -19,7 +21,7 @@ const wrap = (ui: React.ReactElement) => render(<SafeAreaProvider initialMetrics
 const nav = () => ({ navigate: jest.fn(), goBack: jest.fn(), replace: jest.fn() }) as any;
 
 describe('Bienvenida', () => {
-  it('muestra la identidad del club, el rugby inclusivo y el CTA Sumate', async () => {
+  it('muestra la identidad del club, el rugby inclusivo y "Sumate" entra directo con Google', async () => {
     const navigation = nav();
     await wrap(<BienvenidaScreen navigation={navigation} route={{ key: 'b', name: 'Bienvenida' } as never} />);
     expect(screen.getByText('Somos')).toBeTruthy();
@@ -28,7 +30,8 @@ describe('Bienvenida', () => {
     expect(screen.getByText('RUGBY INCLUSIVO')).toBeTruthy();
     expect(screen.getByText(/Vitoria-Gasteiz/)).toBeTruthy();
     await fireEvent.press(screen.getByTestId('cta-sumate'));
-    expect(navigation.navigate).toHaveBeenCalledWith('Login');
+    expect(mockLoginGoogle).toHaveBeenCalled();
+    expect(navigation.navigate).not.toHaveBeenCalled();
   });
 });
 

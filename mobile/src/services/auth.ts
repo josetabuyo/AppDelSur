@@ -45,7 +45,7 @@ export function takeTokenFromLocation(): string | null {
 /** Abre el navegador con el login del backend (Google) y devuelve el token de app. */
 export async function loginWithBrowser(): Promise<string> {
   if (Platform.OS === 'web') {
-    window.location.assign(buildLoginUrl(API_URL, `${window.location.origin}/`));
+    window.location.replace(buildLoginUrl(API_URL, `${window.location.origin}/`));
     return new Promise<string>(() => {}); // la página se va; no vuelve acá
   }
   const redirectUri = Linking.createURL('auth');
