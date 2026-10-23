@@ -13,9 +13,9 @@ import { useSession } from '../state/session';
 import { colors, display, fonts, radius } from '../theme';
 
 const fotos = {
-  familia: require('../../assets/fotos/foto-familia.jpg'),
+  rugby: require('../../assets/fotos/foto-rugby.jpg'),
   hockey: require('../../assets/fotos/foto-hockey.jpg'),
-  abrazo: require('../../assets/fotos/foto-abrazo.jpg'),
+  cancha: require('../../assets/fotos/foto-cancha.jpg'),
 };
 
 const DEPORTES = [
@@ -64,10 +64,10 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
       <ScrollView contentContainerStyle={{ paddingBottom: 130 + insets.bottom }} showsVerticalScrollIndicator={false}>
         {/* Collage de fotos reales del club */}
         <View style={{ height: heroH }}>
-          <Image source={fotos.familia} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: topH }} contentFit="cover" />
+          <Image source={fotos.rugby} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: topH }} contentFit="cover" />
           <View style={[styles.row2, { top: topH + 3, height: bottomH }]}>
-            <Image source={fotos.hockey} style={{ flex: 1.35 }} contentFit="cover" contentPosition="bottom" />
-            <Image source={fotos.abrazo} style={{ flex: 1 }} contentFit="cover" contentPosition="top" />
+            <Image source={fotos.hockey} style={{ flex: 1.35 }} contentFit="cover" contentPosition="center" />
+            <Image source={fotos.cancha} style={{ flex: 1 }} contentFit="cover" contentPosition="center" />
           </View>
           <View style={styles.tint} />
           <LinearGradient
@@ -91,7 +91,7 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
 
         <View style={styles.body}>
           <Text style={styles.lead}>
-            Rugby, hockey y rugby inclusivo. Un club que crece: <Text style={styles.leadStrong}>ascendimos invictos a Primera C</Text> y vamos por más.
+            Rugby, hockey y rugby inclusivo, para todas las edades. <Text style={styles.leadStrong}>Lanzamos la app del club</Text>: en dos minutos nos contás de vos y el club toma mejores decisiones.
           </Text>
 
           <LinearGradient colors={[colors.celeste, '#1C7FC0', colors.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.pumpas}>

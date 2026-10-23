@@ -12,6 +12,8 @@ const C = {sky: '#2AA7DF', navy: '#0C3C6E', yellow: '#F2D94E', white: '#FFFFFF'}
 const D = [150, 225, 180, 165, 300, 210, 220];
 // Narración (voz es-AR Tomás, edge-tts): un clip por escena, 10 frames después de que arranca.
 const VO_OFFSET = 10;
+// Apagada: la voz sintética resultó fría (Lucas). Se prende cuando grabe alguien del club (voz/s1..s7).
+const NARRACION = false;
 const starts = D.reduce<number[]>((a, d, i) => [...a, (a[i - 1] ?? 0) + (i ? D[i - 1] : 0)], []);
 export const TOTAL = D.reduce((a, b) => a + b, 0);
 
@@ -114,29 +116,24 @@ const S2 = () => {
       <div style={{position: 'absolute', left: 60, right: 60, top: 1040, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center'}}>
         <Line text="Rugby. Hockey." size={170} delay={40} hi={[]} />
         <Line text="Rugby inclusivo." size={140} delay={64} color={C.yellow} />
-        <div style={{marginTop: 24}}><Pill delay={100} bg={C.white} size={44}>Invictos 2025 · Primera C</Pill></div>
+        <div style={{marginTop: 24}}><Pill delay={100} bg={C.white} size={44}>Para todas las edades</Pill></div>
       </div>
     </>
   );
 };
 
 const S3 = () => {
-  const f = useCurrentFrame();
-  const counter = Math.floor(interpolate(f, [20, 70], [0, 200], {extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic)}));
-  const q = ['¿Quiénes juegan?', '¿A qué colegio van?', '¿Quién dejó de venir?'];
+  const items = ['Rugby y hockey, todas las divisiones', 'Los datos del club al día', 'Mejores decisiones'];
   return (
     <>
       <Bg a="#10243f" b="#04101f" seed={2} />
-      <AbsoluteFill style={{padding: '170px 70px', alignItems: 'center'}}>
-        <Line text="Hoy no sabemos" size={160} delay={0} />
-        <Line text="cuántos somos" size={160} delay={10} color={C.yellow} />
-        <div style={{fontFamily: ANTON, fontSize: 330, color: C.sky, marginTop: 40, opacity: 0.9 - (f > 70 ? Math.min(0.5, (f - 70) / 30 * 0.5) : 0), transform: `scale(${1 + Math.sin(f / 6) * 0.01})`}}>
-          {f > 70 ? '¿?' : `~${counter}`}
-        </div>
-        <div style={{display: 'flex', flexDirection: 'column', gap: 26, marginTop: 40, alignItems: 'flex-start'}}>
-          {q.map((t, i) => {
-            const p = useSp(75 + i * 22, 14);
-            return <div key={i} style={{fontFamily: ANTON, fontSize: 84, color: C.white, textTransform: 'uppercase', transform: `translateX(${(1 - p) * -900}px)`, borderLeft: `14px solid ${C.yellow}`, paddingLeft: 30}}>{t}</div>;
+      <AbsoluteFill style={{padding: '220px 70px', alignItems: 'center'}}>
+        <Line text="Una nueva etapa" size={150} delay={0} />
+        <Line text="para Del Sur" size={170} delay={10} color={C.yellow} />
+        <div style={{display: 'flex', flexDirection: 'column', gap: 34, marginTop: 110, alignItems: 'flex-start'}}>
+          {items.map((t, i) => {
+            const p = useSp(40 + i * 22, 14);
+            return <div key={i} style={{fontFamily: ANTON, fontSize: 72, color: C.white, textTransform: 'uppercase', transform: `translateX(${(1 - p) * -900}px)`, borderLeft: `14px solid ${C.yellow}`, paddingLeft: 30}}>{t}</div>;
           })}
         </div>
       </AbsoluteFill>
@@ -149,7 +146,7 @@ const S4 = () => (
     <Bg a={C.yellow} b="#f7ec9a" seed={3} />
     <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', gap: 40, padding: 70}}>
       <Crest size={300} />
-      <Line text="Por eso hicimos" size={120} color={C.navy} delay={10} />
+      <Line text="Presentamos" size={120} color={C.navy} delay={10} />
       <Line text="la app del club" size={190} color={C.navy} delay={20} />
       <div style={{background: C.navy, padding: '30px 50px', borderRadius: 30, transform: `rotate(-2deg) scale(${useSp(60)})`}}>
         <Line text="Hecha por el club." size={80} delay={60} />
@@ -246,20 +243,20 @@ const S5 = () => {
 };
 
 const S6 = () => {
-  const items = [['👨‍🏫', 'Profes'], ['🏫', 'Colegios'], ['📞', 'Volver a llamar a los que se fueron']];
+  const items = [['👨‍🏫', 'Profes y entrenamientos'], ['🏫', 'Colegios y barrios'], ['🏉', 'Propuestas para cada división']];
   return (
     <>
       <Bg a={C.navy} b={C.sky} seed={5} />
       <AbsoluteFill style={{padding: '180px 70px', alignItems: 'center'}}>
-        <Line text="Un club" size={190} delay={0} />
-        <Line text="que te da más" size={150} delay={8} color={C.yellow} />
+        <Line text="Mejores" size={190} delay={0} />
+        <Line text="decisiones" size={190} delay={8} color={C.yellow} />
         <div style={{display: 'flex', flexDirection: 'column', gap: 30, marginTop: 70, width: '100%'}}>
           {items.map(([e, t], i) => {
             const p = useSp(35 + i * 18, 12);
             return (
               <div key={i} style={{display: 'flex', alignItems: 'center', gap: 30, background: 'rgba(255,255,255,.95)', borderRadius: 40, padding: '34px 44px', transform: `translateX(${(1 - p) * 1200}px)`}}>
                 <div style={{fontSize: 90}}>{e}</div>
-                <div style={{fontFamily: ANTON, fontSize: i === 2 ? 58 : 78, color: C.navy, textTransform: 'uppercase', lineHeight: 1.05}}>{t}</div>
+                <div style={{fontFamily: ANTON, fontSize: 62, color: C.navy, textTransform: 'uppercase', lineHeight: 1.05}}>{t}</div>
               </div>
             );
           })}
@@ -294,7 +291,7 @@ export const Explicativo: React.FC = () => (
   <AbsoluteFill style={{background: C.navy}}>
     {/* Música procedural libre de derechos (make_music.py de relay-motion-video), ya baja sola bajo la voz. */}
     <Audio src={staticFile('musica.wav')} volume={0.55} />
-    {D.map((_, i) => (
+    {NARRACION && D.map((_, i) => (
       <Sequence key={`vo${i}`} from={starts[i] + VO_OFFSET}>
         <Audio src={staticFile(`voz/s${i + 1}.mp3`)} />
       </Sequence>
