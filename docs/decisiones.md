@@ -46,3 +46,22 @@ Alternativas miradas: Flutter (otro lenguaje, perdemos lo reusado), PWA pura (si
 2. **Vercel** — proyecto `appdelsur` en el team existente (gratis) + Neon desde el Marketplace (gratis).
 3. **Expo/EAS** — la cuenta de José ya existe; hace falta `eas init` para el projectId (gratis).
 4. Más adelante: Apple Developer (USD 99/año) y Google Play Console (USD 25).
+
+## Estado al 2026-10-24
+
+**En producción** (`appdelsur.vercel.app`): web, Android (APK + EAS Update, rama `preview`) e iPhone como **PWA** (Safari → Compartir → "Agregar a inicio": ícono del escudo, pantalla completa). Bienvenida = inicio también con sesión ("Entrar"); fotos institucionales de Lucas; tono neutro ("Llegó la nueva app del club", "Más conectados. Más organizados. Más Del Sur.").
+
+**Cómo se actualiza:**
+- Cambios de JS/diseño en Android: `npx -y eas-cli@latest update --branch preview --environment preview --platform android --message "…" --non-interactive`. El teléfono lo baja al abrir y lo aplica al siguiente arranque (cerrar y abrir dos veces).
+- Web + iPhone (PWA): José corre `bash backend/scripts/publicar.sh` (el agente no puede desplegar a prod).
+- Cambio nativo → APK nuevo (`eas build -p android --profile preview`), actualizar la redirección `/android` y subir `minAppVersion`.
+
+**Tests:** `cd mobile && npx jest` (23) y `cd backend && npm test` (26); `npx tsc --noEmit` limpio.
+
+**Pendientes:**
+- José: cuenta Google Play Console (USD 25) → subir la app y prueba interna.
+- Joel: confirmar preguntas del cuestionario. Club: divisiones de Rugby Inclusivo (hoy "Infantiles/Adultos" es placeholder).
+- Alguien con iPhone: probar el login de Google en la PWA instalada.
+- Pantalla admin con cantidad de registrados (ofrecida, sin arrancar).
+- **Video en pausa** hasta terminar la app (reel de 8 placas en `video/`, sin voz; se grabará una voz del club). No se mandó al grupo.
+- Después: dominio propio (nic.ar), Apple Developer (USD 99/año), v2 reemplazando la app del tercero.
