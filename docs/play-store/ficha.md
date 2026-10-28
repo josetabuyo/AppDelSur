@@ -42,11 +42,13 @@ Todo lo que pide Play Console para publicar, listo para copiar. Gráficos en est
 
 ## Capturas (teléfono, 1080×1920)
 
-1. `capturas/1-bienvenida.png` — Viví el club
-2. `capturas/2-bienvenida-club.png` — Juegan todos (rugby inclusivo)
-3. `capturas/3-login.png` — Sumate a la vida de club
-4. `capturas/4-sos-jugador.png` — ¿Sos jugador/a?
-5. `capturas/5-cuestionario.png` — Contanos de vos
+1. `capturas/1-inicio.png` — La app del club
+2. `capturas/2-padron.png` — Completá tus datos (tu familia ya está)
+3. `capturas/3-datos-precargados.png` — División y colegio, en dos pasos
+4. `capturas/4-contacto.png` — Contacto
+5. `capturas/5-gracias.png` — ¡Gracias! Ya es parte
+
+Se generan con el flujo real en la web local y un padrón de prueba con nombres inventados (2026-10-28).
 
 ## Formularios de "Contenido de la app"
 
