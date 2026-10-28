@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, boolean, integer, date } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, boolean, integer, date, index } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -13,7 +13,9 @@ export const users = pgTable("users", {
 export const registros = pgTable("registros", {
   id: uuid("id").primaryKey().defaultRandom(),
   user_id: uuid("user_id").notNull().references(() => users.id),
-  carga_para: text("carga_para", { enum: ["yo", "hijo"] }).notNull(),
+  carga_para: text("carga_para", { enum: ["yo", "hijo", "companero"] }).notNull(),
+  /** Socio del padrón al que corresponde este registro (si vino de ahí). */
+  socio_nro: text("socio_nro"),
   tipo: text("tipo", { enum: ["jugador", "comunidad"] }).notNull(),
   nombre: text("nombre").notNull(),
   apellido: text("apellido").notNull(),
@@ -38,5 +40,25 @@ export const registros = pgTable("registros", {
   updated_at: timestamp("updated_at").notNull().defaultNow(),
 });
 
+/**
+ * Padrón de socios que exporta la app del tercero (lo pasa la secretaría). Es la "lista blanca":
+ * si el mail de Google está acá, la app va directo al formulario con los datos precargados.
+ * Solo los campos que hacen falta para eso; nada de pagos ni datos médicos.
+ */
+export const padron = pgTable("padron", {
+  socio_nro: text("socio_nro").primaryKey(),
+  email: text("email"), // en minúsculas; varios socios pueden compartir mail (familia)
+  nombre: text("nombre").notNull(),
+  apellido: text("apellido").notNull(),
+  categoria: text("categoria"), // "Jugadores", "Activos", "Familia R.I", ...
+  dni: text("dni"),
+  fecha_nacimiento: date("fecha_nacimiento"),
+  actividades: text("actividades"), // "Gym, Hockey, Rugby"
+  divisiones: text("divisiones"), // "Rugby > M-16"
+  titular_grupo: text("titular_grupo"),
+  importado_at: timestamp("importado_at").notNull().defaultNow(),
+}, (t) => [index("padron_email_idx").on(t.email)]);
+
 export type User = typeof users.$inferSelect;
 export type RegistroRow = typeof registros.$inferSelect;
+export type PadronRow = typeof padron.$inferSelect;

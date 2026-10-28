@@ -8,7 +8,9 @@ import BienvenidaScreen from '../screens/BienvenidaScreen';
 import CuestionarioScreen from '../screens/CuestionarioScreen';
 import EnrolamientoScreen from '../screens/EnrolamientoScreen';
 import GraciasScreen from '../screens/GraciasScreen';
+import InicioScreen from '../screens/InicioScreen';
 import LoginScreen from '../screens/LoginScreen';
+import PadronScreen from '../screens/PadronScreen';
 import SosJugadorScreen from '../screens/SosJugadorScreen';
 import { useSession } from '../state/session';
 import { colors } from '../theme';
@@ -37,7 +39,7 @@ function useWebBackInsideApp() {
 }
 
 export default function RootNavigator() {
-  const { status, upgradeRequired } = useSession();
+  const { status, upgradeRequired, padron } = useSession();
   useWebBackInsideApp();
 
   if (upgradeRequired) return <ActualizarScreen />;
@@ -52,10 +54,15 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer ref={navRef} documentTitle={{ formatter: () => 'Del Sur · Rugby y Hockey' }}>
-      <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper }, animation: 'slide_from_right' }}>
+      {/* key: al cambiar de sesión (o al cargarse el padrón) arranca de nuevo desde la pantalla que corresponde. */}
+      <Stack.Navigator
+        key={status === 'authed' ? (padron.length ? 'padron' : 'comunidad') : 'anon'}
+        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper }, animation: 'slide_from_right' }}
+      >
         {status === 'authed' ? (
           <>
-            {/* La bienvenida es el inicio siempre, también con sesión: así todos ven las novedades. */}
+            {/* En el padrón (lista blanca de mails): directo a sus datos. Si no, la presentación del club. */}
+            {padron.length ? <Stack.Screen name="Padron" component={PadronScreen} /> : null}
             <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
             <Stack.Screen name="SosJugador" component={SosJugadorScreen} />
             <Stack.Screen name="Cuestionario" component={CuestionarioScreen} />
@@ -64,7 +71,7 @@ export default function RootNavigator() {
           </>
         ) : (
           <>
-            <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
+            <Stack.Screen name="Inicio" component={InicioScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
           </>
         )}

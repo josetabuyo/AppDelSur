@@ -3,7 +3,20 @@ import type { RegistroPayload } from '../lib/payload';
 
 export type User = { id: string; email: string; name: string | null; image: string | null };
 export type Registro = RegistroPayload & { id: string; createdAt: string; appVersion?: string };
-export type MeResponse = { user: User; registros: Registro[] };
+/** Alguien del padrón del club con el mismo mail que la cuenta (GET /api/v1/me). */
+export type PadronPersona = {
+  socio: string;
+  nombre: string;
+  apellido: string;
+  categoria: string | null;
+  dni: string | null;
+  fechaNacimiento: string | null; // YYYY-MM-DD
+  deporte: 'rugby' | 'hockey' | 'rugby_inclusivo' | null;
+  division: string | null;
+  jugador: boolean;
+  cargado: boolean;
+};
+export type MeResponse = { user: User; registros: Registro[]; padron?: PadronPersona[] };
 
 export class ApiError extends Error {
   constructor(
@@ -58,6 +71,7 @@ export const api = {
   devLogin: (email: string, name: string) =>
     request<{ token: string; user: User }>('/api/v1/auth/dev-login', { method: 'POST', body: { email, name } }),
   me: (token: string) => request<MeResponse>('/api/v1/me', { token }),
+  borrarCuenta: (token: string) => request<{ ok: true; registrosBorrados: number }>('/api/v1/me', { method: 'DELETE', token }),
   crearRegistro: (token: string, payload: RegistroPayload) =>
     request<{ registro: Registro }>('/api/v1/registros', { method: 'POST', token, body: payload }),
 };

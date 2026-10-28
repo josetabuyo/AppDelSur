@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CuentaFooter } from '../components/CuentaFooter';
 import { FormHeader } from '../components/FormHeader';
 import { splitName } from '../lib/payload';
 import type { ScreenProps } from '../navigation/types';
@@ -18,11 +19,12 @@ type Opcion = {
 
 export default function SosJugadorScreen({ navigation }: ScreenProps<'SosJugador'>) {
   const insets = useSafeAreaInsets();
-  const { user, registros, logout } = useSession();
+  const { user, registros } = useSession();
   const nombre = splitName(user?.name).nombre.split(' ')[0];
 
   const opciones: Opcion[] = [
     { key: 'yo', emoji: '🏉', title: 'Sí, juego', desc: 'Rugby, hockey o rugby inclusivo', bg: colors.celesteSoft, go: () => navigation.navigate('Cuestionario', { cargaPara: 'yo' }) },
+    { key: 'companero', emoji: '🤜', title: 'Sumo a un compañero/a', desc: 'Lo tenés al lado y no tiene la app: cargalo vos', bg: '#E3F4EA', go: () => navigation.navigate('Cuestionario', { cargaPara: 'companero' }) },
     { key: 'hijo', emoji: '🧒', title: 'Cargo los datos de mi hijo/a', desc: 'Para los más chicos que no tienen celu', bg: colors.yellowSoft, go: () => navigation.navigate('Cuestionario', { cargaPara: 'hijo' }) },
     { key: 'comunidad', emoji: '💙', title: 'No juego, soy parte de la comunidad', desc: 'Familia, socio/a, ex jugador/a, amigo/a', bg: '#E8EEF6', go: () => navigation.navigate('Enrolamiento') },
   ];
@@ -55,12 +57,7 @@ export default function SosJugadorScreen({ navigation }: ScreenProps<'SosJugador
             <Text style={styles.arrow}>›</Text>
           </Pressable>
         ))}
-        <Pressable onPress={logout} style={styles.logout} accessibilityRole="button">
-          <Text style={styles.logoutText}>
-            {user?.email ? `Entraste como ${user.email} · ` : ''}
-            <Text style={{ textDecorationLine: 'underline' }}>Salir</Text>
-          </Text>
-        </Pressable>
+        <CuentaFooter />
       </ScrollView>
     </View>
   );
@@ -93,6 +90,4 @@ const styles = StyleSheet.create({
   cardTitle: { ...display(24), color: colors.navy },
   cardDesc: { fontFamily: fonts.medium, fontSize: 14, color: colors.textMuted, marginTop: 3 },
   arrow: { fontSize: 34, color: colors.celeste, marginTop: -4 },
-  logout: { alignItems: 'center', marginTop: 10, padding: 8 },
-  logoutText: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted, textAlign: 'center' },
 });

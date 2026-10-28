@@ -6,3 +6,9 @@ node_modules/
 # Privado: transcripciones crudas y feedback del grupo (no se publican)
 /transcripciones/*.txt
 /docs/feedback-*.md
+
+# Padrón de socios (datos personales): nunca al repo
+*.xls
+*.xlsx
+padron*.json
+.playwright-mcp/

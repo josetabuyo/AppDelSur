@@ -1,6 +1,7 @@
 import { isValidDni, isValidEmail, isValidPhone, parseDate } from './validation';
 
-export type CargaPara = 'yo' | 'hijo';
+/** Para quién se cargan los datos: uno mismo, un hijo/a, o un compañero/a que no tiene la app. */
+export type CargaPara = 'yo' | 'hijo' | 'companero';
 export type Deporte = 'rugby' | 'hockey' | 'rugby_inclusivo';
 export type Vinculo = 'familiar' | 'socio' | 'ex_jugador' | 'amigo' | 'otro';
 

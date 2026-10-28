@@ -31,7 +31,12 @@ Atajo solo dev (para tests y simulador sin navegador): `POST /api/v1/auth/dev-lo
 ## Endpoints
 
 ### `GET /api/v1/me` (Bearer)
-`200 {"user":{"id","email","name","image"},"registros":[Registro,...]}` — los registros que cargó este usuario (él y/o sus hijos). `401` sin token válido.
+`200 {"user":{"id","email","name","image"},"registros":[Registro,...],"padron":[PadronPersona,...]}` — los registros que cargó este usuario (él, sus hijos, compañeros) y los socios del **padrón** con su mismo mail. `401` sin token válido.
+
+`PadronPersona` = `{"socio","nombre","apellido","categoria","dni","fechaNacimiento":"YYYY-MM-DD"|null,"deporte","division","jugador":bool,"cargado":bool}`. `cargado` = ya existe un registro con ese `socio` (lo haya cargado quien sea). La app filtra `jugador` y, si queda alguno, va directo a completarlos (lista blanca); si no, muestra la presentación del club y "¿sos jugador?". "Familia R.I" se interpreta como rugby inclusivo.
+
+### `DELETE /api/v1/me` (Bearer)
+Borra la cuenta y todos sus registros (lo exige Google Play). `200 {"ok":true,"registrosBorrados":N}`. Web: `/borrar-cuenta`.
 
 ### `POST /api/v1/registros` (Bearer)
 Crea un registro (una persona). Un padre puede crear varios (uno por hijo).
@@ -39,7 +44,8 @@ Crea un registro (una persona). Un padre puede crear varios (uno por hijo).
 ```jsonc
 {
   "tipo": "jugador" | "comunidad",
-  "cargaPara": "yo" | "hijo",          // "hijo" = un adulto carga los datos de un menor
+  "cargaPara": "yo" | "hijo" | "companero", // "hijo" = un adulto carga a un menor; "companero" = un jugador suma a otro sin app
+  "socio": "string?",                    // nº de socio del padrón, si completa a alguien que ya estaba
   "nombre": "string",                    // requerido
   "apellido": "string",                  // requerido
   // jugador:
@@ -69,5 +75,6 @@ Crea un registro (una persona). Un padre puede crear varios (uno por hijo).
 ## Modelo de datos (Postgres: Neon en prod, PGlite en dev)
 
 - `users` — id uuid, email único, name, image, google_sub, role (`member`|`admin`, default `member`), created_at.
-- `registros` — id uuid, user_id → users (quien cargó), carga_para, tipo, todos los campos de arriba en snake_case, app_version, created_at, updated_at.
+- `padron` — export "Socios" de la app del tercero (lo pasa la secretaría): socio_nro PK, email (minúsculas, índice; una familia comparte), nombre, apellido, categoria, dni, fecha_nacimiento, actividades, divisiones, titular_grupo. Se reemplaza entero en cada import (`backend/scripts/padron_xls_a_json.py` + `npm run padron:importar`). Sin pagos, tarjetas ni datos médicos.
+- `registros` — id uuid, user_id → users (quien cargó), carga_para, tipo, todos los campos de arriba en snake_case, socio_nro (→ padrón, si vino de ahí), app_version, created_at, updated_at.
   Pensado para v2: un usuario con N registros = grupo familiar; `colegio` texto libre ahora, se normaliza después a tabla `colegios` para el ranking; `division`/`deporte` alimentan asistencia y perfiles.

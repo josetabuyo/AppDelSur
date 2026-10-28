@@ -1,14 +1,12 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { Crest } from '../components/Crest';
 import { Stripes } from '../components/Hearts';
-import { DEV_LOGIN } from '../config';
 import type { ScreenProps } from '../navigation/types';
-import { LoginCancelled } from '../services/auth';
 import { useSession } from '../state/session';
 import { colors, display, fonts, radius } from '../theme';
 
@@ -24,6 +22,7 @@ const DEPORTES = [
   { emoji: '🤝', label: 'Rugby inclusivo' },
 ];
 
+/** La presentación del club: solo para quien entra y no está en el padrón (familia, amigos, gente nueva). */
 export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida'>) {
   const insets = useSafeAreaInsets();
   const { width: winW } = useWindowDimensions();
@@ -32,32 +31,8 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
   const bottomH = Math.round(width / 2.5);
   const heroH = topH + 3 + bottomH;
   const famSize = Math.min(width * 0.25, 108);
-  const { status, user, loginGoogle, freshLogin, clearFreshLogin } = useSession();
-  const authed = status === 'authed';
-
-  // Recién logueado: sin pararse en la bienvenida, directo a "¿sos jugador?" (con la bienvenida debajo para volver).
-  useEffect(() => {
-    if (!authed || !freshLogin) return;
-    clearFreshLogin();
-    navigation.navigate('SosJugador');
-  }, [authed, freshLogin, clearFreshLogin, navigation]);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // "Sumate" entra directo con Google: sin pantalla intermedia. En modo prueba sigue la pantalla de login.
-  const sumate = async () => {
-    if (authed) return navigation.navigate('SosJugador');
-    if (DEV_LOGIN) return navigation.navigate('Login');
-    setError(null);
-    setBusy(true);
-    try {
-      await loginGoogle();
-    } catch (e) {
-      if (!(e instanceof LoginCancelled)) setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
+  const { user } = useSession();
+  const nombre = user?.name?.split(' ')[0];
 
   return (
     <View style={styles.root}>
@@ -126,10 +101,9 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
         locations={[0, 0.35, 1]}
         style={[styles.ctaBar, { paddingBottom: insets.bottom + 16 }]}
       >
-        {error ? <Text style={styles.ctaError}>{error}</Text> : null}
-        <Button label={authed ? 'Entrar' : 'Sumate'} big onPress={sumate} loading={busy} testID="cta-sumate" />
+        <Button label="Seguir" big onPress={() => navigation.navigate('SosJugador')} testID="cta-seguir" />
         <Text style={styles.ctaHint}>
-          {authed ? `Ya estás adentro${user?.name ? `, ${user.name.split(' ')[0]}` : ''} 💙🤍💛` : 'Entrás con tu cuenta de Google · dos minutos 💙🤍💛'}
+          {nombre ? `Hola ${nombre} · ` : ''}dos minutos 💙🤍💛
         </Text>
       </LinearGradient>
     </View>
@@ -138,7 +112,6 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.navy },
-  ctaError: { fontFamily: fonts.medium, fontSize: 13, color: colors.yellow, textAlign: 'center', marginBottom: 8 },
   row2: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', gap: 3 },
   tint: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(42,167,223,0.16)' },
   brand: { position: 'absolute', left: 20, flexDirection: 'row', alignItems: 'center', gap: 10 },

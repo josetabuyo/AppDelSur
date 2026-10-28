@@ -5,7 +5,8 @@ const req = z.string({ error: "requerido" }).trim().min(1, "requerido").max(200)
 
 export const registroSchema = z.object({
   tipo: z.enum(["jugador", "comunidad"], { error: "invalido" }),
-  cargaPara: z.enum(["yo", "hijo"], { error: "invalido" }),
+  cargaPara: z.enum(["yo", "hijo", "companero"], { error: "invalido" }),
+  socio: z.string().trim().max(40).optional().nullable().transform((v) => (v ? v : null)),
   nombre: req,
   apellido: req,
   dni: z.string().trim().regex(/^\d{7,8}$/, "dni invalido (7-8 digitos)").optional().nullable().or(z.literal("").transform(() => null)),
@@ -46,6 +47,6 @@ export function toApiRegistro(r: RegistroRow) {
     email: r.email, familiaEnClub: r.familia_en_club, contento: r.contento,
     conoceQuienDejo: r.conoce_quien_dejo, quienDejoDetalle: r.quien_dejo_detalle,
     vinculo: r.vinculo, vinculoDetalle: r.vinculo_detalle, comentarios: r.comentarios,
-    appVersion: r.app_version, createdAt: r.created_at.toISOString(),
+    socio: r.socio_nro, appVersion: r.app_version, createdAt: r.created_at.toISOString(),
   };
 }

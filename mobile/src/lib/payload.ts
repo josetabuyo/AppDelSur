@@ -5,6 +5,8 @@ import { onlyDigits, parseDate } from './validation';
 export type RegistroPayload = {
   tipo: 'jugador' | 'comunidad';
   cargaPara: CargaPara;
+  /** Nº de socio del padrón, si el registro completa a alguien que ya estaba ahí. */
+  socio?: string;
   nombre: string;
   apellido: string;
   dni?: string;
@@ -35,11 +37,12 @@ function compact<T extends object>(o: T): T {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
 }
 
-export function buildJugadorPayload(f: JugadorForm, cargaPara: CargaPara): RegistroPayload {
+export function buildJugadorPayload(f: JugadorForm, cargaPara: CargaPara, socio?: string): RegistroPayload {
   const dni = onlyDigits(f.dni);
   return compact<RegistroPayload>({
     tipo: 'jugador',
     cargaPara,
+    socio,
     nombre: f.nombre.trim(),
     apellido: f.apellido.trim(),
     dni: dni || undefined,

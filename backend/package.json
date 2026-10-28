@@ -11,7 +11,8 @@
     "db:migrate": "tsx --env-file-if-exists=.env.local scripts/migrate.ts",
     "smoke": "tsx scripts/smoke.ts",
     "vercel-build": "tsx scripts/migrate.ts && next build",
-    "build:web": "scripts/build-web.sh"
+    "build:web": "scripts/build-web.sh",
+    "padron:importar": "tsx --env-file-if-exists=.env.local scripts/importar-padron.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.11",

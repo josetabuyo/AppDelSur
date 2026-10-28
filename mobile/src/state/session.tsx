@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { api, ApiError, onUpgradeRequired, Registro, User } from '../services/api';
+import { api, ApiError, onUpgradeRequired, PadronPersona, Registro, User } from '../services/api';
 import { loginWithBrowser, takeTokenFromLocation } from '../services/auth';
 import { clearToken, getToken, setToken } from '../services/storage';
 
@@ -10,13 +10,14 @@ type SessionValue = {
   token: string | null;
   user: User | null;
   registros: Registro[];
+  /** Jugadores del padrón del club con el mail de esta cuenta: si hay, la app va directo a completarlos. */
+  padron: PadronPersona[];
   upgradeRequired: string | false; // false o la minAppVersion pedida
-  /** Recién volvió del login: la bienvenida lo pasa directo a "¿sos jugador?" una sola vez. */
-  freshLogin: boolean;
-  clearFreshLogin: () => void;
   loginGoogle: () => Promise<void>;
   loginDev: () => Promise<void>;
   logout: () => Promise<void>;
+  /** Borra la cuenta y todo lo cargado en el backend, y cierra la sesión. */
+  borrarCuenta: () => Promise<void>;
   refresh: () => Promise<void>;
   addRegistro: (r: Registro) => void;
 };
@@ -29,7 +30,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [registros, setRegistros] = useState<Registro[]>([]);
   const [upgradeRequired, setUpgrade] = useState<string | false>(false);
-  const [freshLogin, setFreshLogin] = useState(false);
+  const [padron, setPadron] = useState<PadronPersona[]>([]);
 
   useEffect(() => {
     onUpgradeRequired((min) => setUpgrade(min ?? 'nueva'));
@@ -41,6 +42,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setTok(t);
     setUser(me.user);
     setRegistros(me.registros ?? []);
+    setPadron((me.padron ?? []).filter((p) => p.jugador));
     setStatus('authed');
   }, []);
 
@@ -50,7 +52,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       const fromRedirect = takeTokenFromLocation();
       if (fromRedirect) {
         await setToken(fromRedirect);
-        setFreshLogin(true);
       }
       const saved = fromRedirect ?? (await getToken().catch(() => null));
       if (!saved) return setStatus('anon');
@@ -66,11 +67,19 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const loginWith = useCallback(
     async (t: string) => {
       await setToken(t);
-      setFreshLogin(true);
       await adopt(t);
     },
     [adopt],
   );
+
+  const logout = useCallback(async () => {
+    await clearToken();
+    setTok(null);
+    setUser(null);
+    setRegistros([]);
+    setPadron([]);
+    setStatus('anon');
+  }, []);
 
   const value = useMemo<SessionValue>(
     () => ({
@@ -78,28 +87,27 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       token,
       user,
       registros,
+      padron,
       upgradeRequired,
-      freshLogin,
-      clearFreshLogin: () => setFreshLogin(false),
       loginGoogle: async () => loginWith(await loginWithBrowser()),
       loginDev: async () => {
         const r = await api.devLogin('prueba@delsur.dev', 'Socia de Prueba');
         await loginWith(r.token);
       },
-      logout: async () => {
-        await clearToken();
-        setTok(null);
-        setUser(null);
-        setRegistros([]);
-        setFreshLogin(false);
-        setStatus('anon');
+      logout,
+      borrarCuenta: async () => {
+        if (token) await api.borrarCuenta(token);
+        await logout();
       },
       refresh: async () => {
         if (token) await adopt(token);
       },
-      addRegistro: (r) => setRegistros((prev) => [...prev, r]),
+      addRegistro: (r) => {
+        setRegistros((prev) => [...prev, r]);
+        if (r.socio) setPadron((prev) => prev.map((p) => (p.socio === r.socio ? { ...p, cargado: true } : p)));
+      },
     }),
-    [status, token, user, registros, upgradeRequired, freshLogin, loginWith, adopt],
+    [status, token, user, registros, padron, upgradeRequired, loginWith, adopt, logout],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

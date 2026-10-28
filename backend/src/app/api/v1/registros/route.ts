@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const d = v.data;
   const db = await getDb();
   const [row] = await db.insert(registros).values({
-    user_id: u.id, carga_para: d.cargaPara, tipo: d.tipo, nombre: d.nombre, apellido: d.apellido,
+    user_id: u.id, carga_para: d.cargaPara, socio_nro: d.socio ?? null, tipo: d.tipo, nombre: d.nombre, apellido: d.apellido,
     dni: d.dni ?? null, fecha_nacimiento: d.fechaNacimiento ?? null, deporte: d.deporte ?? null,
     division: d.division ?? null, colegio: d.colegio ?? null, localidad: d.localidad ?? null,
     domicilio: d.domicilio ?? null, telefono: d.telefono ?? null, email: d.email ?? null,

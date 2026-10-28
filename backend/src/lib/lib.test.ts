@@ -31,6 +31,11 @@ describe("validateRegistro", () => {
     expect(validateRegistro(base).ok).toBe(true);
     expect(validateRegistro({ ...base, dni: "12345678", fechaNacimiento: "2010-05-01", deporte: "rugby", contento: 4, conoceQuienDejo: false }).ok).toBe(true);
   });
+  it("acepta cargaPara companero y el nº de socio del padrón", () => {
+    const r = validateRegistro({ ...base, cargaPara: "companero", socio: "123-0" });
+    expect(r.ok && r.data).toMatchObject({ cargaPara: "companero", socio: "123-0" });
+    expect(validateRegistro({ ...base, cargaPara: "vecino" }).ok).toBe(false);
+  });
   it("falta nombre", () => {
     const r = validateRegistro({ ...base, nombre: undefined });
     expect(r.ok).toBe(false);

@@ -18,6 +18,7 @@ export default function GraciasScreen({ navigation, route }: ScreenProps<'Gracia
   const insets = useSafeAreaInsets();
   const { nombre, tipo, cargaPara } = route.params;
   const hijo = cargaPara === 'hijo';
+  const otro = hijo || cargaPara === 'companero';
 
   const compartir = () => Share.share({ message: SHARE_TEXT }).catch(() => undefined);
 
@@ -26,8 +27,8 @@ export default function GraciasScreen({ navigation, route }: ScreenProps<'Gracia
       <ScrollView contentContainerStyle={[styles.body, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 28 }]}>
         <View style={styles.inner}>
           <Crest size={92} />
-          <Text style={styles.kicker}>{hijo ? `${nombre.toUpperCase()} YA ES PARTE` : tipo === 'comunidad' ? 'YA SOS PARTE DE LA COMUNIDAD' : 'YA ESTÁS ADENTRO'}</Text>
-          <Text style={styles.title}>{hijo ? '¡Gracias!' : `¡Gracias, ${nombre}!`}</Text>
+          <Text style={styles.kicker}>{otro ? `${nombre.toUpperCase()} YA ES PARTE` : tipo === 'comunidad' ? 'YA SOS PARTE DE LA COMUNIDAD' : 'YA ESTÁS ADENTRO'}</Text>
+          <Text style={styles.title}>{otro ? '¡Gracias!' : `¡Gracias, ${nombre}!`}</Text>
           <Stripes width={110} />
 
           <View style={styles.texts}>
@@ -55,6 +56,7 @@ export default function GraciasScreen({ navigation, route }: ScreenProps<'Gracia
               label={hijo ? 'Cargar otro hijo/a' : 'Cargar a mi hijo/a'}
               onPress={() => navigation.replace('Cuestionario', { cargaPara: 'hijo' })}
             />
+            <Button testID="sumar-companero" label="Sumar a un compañero/a" variant="light" onPress={() => navigation.replace('Cuestionario', { cargaPara: 'companero' })} />
             <Button testID="compartir" label="Compartir con otro del club" variant="light" onPress={compartir} />
             <Button label="Listo" variant="ghost" onPress={() => navigation.popToTop()} />
           </View>

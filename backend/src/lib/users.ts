@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { getDb, users } from "@/db";
+import { getDb, registros, users } from "@/db";
 
 export async function upsertUser(p: { email: string; name?: string | null; image?: string | null; googleSub?: string | null }) {
   const db = await getDb();
@@ -16,3 +16,11 @@ export async function upsertUser(p: { email: string; name?: string | null; image
 }
 
 export const devLoginEnabled = () => !process.env.VERCEL && process.env.NODE_ENV !== "production";
+
+/** Borra la cuenta y todo lo que cargó (Play exige poder hacerlo desde la app y desde la web). */
+export async function deleteUserData(userId: string) {
+  const db = await getDb();
+  const borrados = await db.delete(registros).where(eq(registros.user_id, userId)).returning({ id: registros.id });
+  await db.delete(users).where(eq(users.id, userId));
+  return { registros: borrados.length };
+}

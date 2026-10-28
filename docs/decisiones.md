@@ -52,16 +52,61 @@ Alternativas miradas: Flutter (otro lenguaje, perdemos lo reusado), PWA pura (si
 **En producción** (`appdelsur.vercel.app`): web, Android (APK + EAS Update, rama `preview`) e iPhone como **PWA** (Safari → Compartir → "Agregar a inicio": ícono del escudo, pantalla completa). Bienvenida = inicio también con sesión ("Entrar"); fotos institucionales de Lucas; tono neutro ("Llegó la nueva app del club", "Más conectados. Más organizados. Más Del Sur.").
 
 **Cómo se actualiza:**
-- Cambios de JS/diseño en Android: `npx -y eas-cli@latest update --branch preview --environment preview --platform android --message "…" --non-interactive`. El teléfono lo baja al abrir y lo aplica al siguiente arranque (cerrar y abrir dos veces).
+- Cambios de JS/diseño en Android: `npx -y eas-cli@latest update --branch preview --environment preview --platform android --message "…" --non-interactive`. El teléfono lo baja al abrir y lo aplica al siguiente arranque (cerrar y abrir dos veces). `eas update` **no** lee el `env` de `eas.json` (eso es solo para builds): `EXPO_PUBLIC_API_URL` vive en las variables de EAS (entornos `preview` y `production`, creadas 2026-10-26). Sin ella el update sale apuntando a `10.0.2.2` y el login falla en todos los Android (pasó con los updates del 22–23/10).
 - Web + iPhone (PWA): José corre `bash backend/scripts/publicar.sh` (el agente no puede desplegar a prod).
 - Cambio nativo → APK nuevo (`eas build -p android --profile preview`), actualizar la redirección `/android` y subir `minAppVersion`.
 
 **Tests:** `cd mobile && npx jest` (23) y `cd backend && npm test` (26); `npx tsc --noEmit` limpio.
 
 **Pendientes:**
-- José: cuenta Google Play Console (USD 25) → subir la app y prueba interna.
+- José: cuenta Google Play Console (USD 25, pago único) → subir el AAB a prueba cerrada (12 testers × 14 días). Ficha, gráficos y respuestas de formularios listos en `docs/play-store/ficha.md`. Antes: `publicar.sh` para que el backend tenga `DELETE /api/v1/me` y `/borrar-cuenta` (Play exige borrar cuenta), y confirmar que la pantalla de consentimiento OAuth está "En producción".
 - Joel: confirmar preguntas del cuestionario. Club: divisiones de Rugby Inclusivo (hoy "Infantiles/Adultos" es placeholder).
 - Alguien con iPhone: probar el login de Google en la PWA instalada.
 - Pantalla admin con cantidad de registrados (ofrecida, sin arrancar).
 - **Video en pausa** hasta terminar la app (reel de 8 placas en `video/`, sin voz; se grabará una voz del club). No se mandó al grupo.
 - Después: dominio propio (nic.ar), Apple Developer (USD 99/año), v2 reemplazando la app del tercero.
+
+## MVP cerrado (2026-10-28) — feedback de Quieta del 28/10
+
+**Flujo nuevo, más minimalista** (José: "salió con demasiado humo y color"; Lucas: lo primero es recolectar datos):
+
+1. **Inicio** sin sesión: escudo, una foto, "La app del club", *Entrar con Google*. Nada más.
+2. Después del login, según el **padrón de socios** (lista blanca de mails, el export "Socios" que pasó Lucas: 643 socios, 628 con mail, 408 "Jugadores"):
+   - **Está en el padrón** → pantalla *Completá tus datos*: lista a la familia que comparte ese mail (los jugadores, incluida la categoría "Familia R.I" = rugby inclusivo), cada uno con su división. Al tocar, el formulario ya viene con nombre, DNI, fecha y división; si el padrón los tiene todos, se saltea el paso "Persona" (2 pasos en vez de 3, con "Editar"). Sin presentación institucional.
+   - **No está** → la presentación del club (la "folletería") → *¿Sos jugador/a?* → formularios, como antes.
+3. **Sumar a un compañero/a** (José: "lo tenés al lado en el tercer tiempo y lo agregás"): desde el padrón, desde ¿sos jugador? y desde el gracias. Formulario corto, sin "¿estás contento?" (no se responde por otro), con su mail para que después pueda entrar.
+4. Gracias → *Listo* vuelve a la lista del padrón con el ✓.
+
+El registro guarda `socio_nro`: cada carga queda atada al socio del padrón (BI: cruzar padrón vs. cargados = quién falta).
+
+**Cargar / actualizar el padrón en producción** (los .xls y .json tienen datos personales: nunca al repo, el `.gitignore` los bloquea):
+
+```bash
+cd backend
+python3 scripts/padron_xls_a_json.py ~/ruta/Socios_281026.xls /tmp/padron.json   # solo los campos que usa la app
+DATABASE_URL='<Neon prod>' npm run padron:importar -- /tmp/padron.json && rm /tmp/padron.json
+```
+
+Ojo: el export trae números de tarjeta en "Forma de Pago" y datos médicos: el conversor **no** los lee.
+
+**Tests:** `cd mobile && npx jest` (34) · `cd backend && npm test` (39) · `npx tsc --noEmit` limpio en los dos. Probado de punta a punta en web local con un padrón de prueba.
+
+## Las dos cuentas de desarrollador (lo único que falta para tiendas)
+
+| | Google Play Console | Apple Developer Program |
+|---|---|---|
+| Costo | USD 25, una vez | USD 99 por año |
+| Quién paga | José | Lucas (a nombre de José) |
+| Requisito de testers | **Sí**: cuenta personal nueva → prueba cerrada con **12 testers × 14 días seguidos** antes de poder publicar en producción | **No hay**. (Los "12 testers" son de Google, no de Apple.) |
+| Revisión | Revisión de Google al pasar a producción | TestFlight interno (hasta 100, sin revisión); externo con link (hasta 10.000) pide una revisión beta corta; App Store, revisión completa |
+| Qué hago yo cuando exista | `eas build -p android --profile production` (AAB) + `eas submit` a prueba cerrada; ficha lista en `docs/play-store/ficha.md` | `eas build -p ios` (EAS firma, no hace falta Xcode) + `eas submit` a TestFlight; después ficha de App Store (capturas iPhone, privacidad) |
+
+- A nombre de persona, la tienda muestra "José Tabuyo" como vendedor. Si más adelante el club quiere figurar como organización: cuenta de organización (necesita D-U-N-S del club como asociación civil, gratis pero tarda). En Google, la cuenta de organización además **no** tiene la regla de 12 testers. Apple tiene exención de la cuota para organizaciones sin fines de lucro solo en algunos países; hay que chequear si Argentina entra.
+- Mientras corren los 14 días de Play: el APK directo + EAS Update y la PWA en iPhone siguen funcionando igual.
+
+**Orden para dar el OK final:**
+1. José: `bash backend/scripts/publicar.sh` (despliega backend + web; la migración `0001_padron` corre sola en el build).
+2. José (o yo con la URL de Neon): cargar el padrón (comando de arriba).
+3. Yo: `eas update` a la rama `preview` → los Android que ya la tienen se actualizan solos.
+4. José paga Play → yo rehago las capturas de `docs/play-store/capturas/` (son del flujo viejo) y subo el AAB a prueba cerrada → juntamos 12 testers (Quieta + amigos) y arrancan los 14 días.
+5. Lucas paga Apple → invitación a la cuenta → yo hago el build iOS y TestFlight.
