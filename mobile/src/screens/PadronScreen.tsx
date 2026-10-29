@@ -52,10 +52,10 @@ export default function PadronScreen({ navigation }: ScreenProps<'Padron'>) {
           ¿Tenés al lado a un compañero/a que no tiene la app o no tiene mail? <Text style={styles.tipStrong}>Cargalo vos</Text>.
         </Text>
         <View style={styles.row}>
-          <Pressable testID="sumar-companero" style={styles.small} onPress={() => navigation.navigate('Cuestionario', { cargaPara: 'companero' })} accessibilityRole="button">
+          <Pressable testID="sumar-companero" style={styles.small} onPress={() => navigation.navigate('Ficha', { cargaPara: 'companero' })} accessibilityRole="button">
             <Text style={styles.smallText}>🤜 Un compañero/a</Text>
           </Pressable>
-          <Pressable testID="sumar-hijo" style={styles.small} onPress={() => navigation.navigate('Cuestionario', { cargaPara: 'hijo' })} accessibilityRole="button">
+          <Pressable testID="sumar-hijo" style={styles.small} onPress={() => navigation.navigate('Ficha', { cargaPara: 'hijo' })} accessibilityRole="button">
             <Text style={styles.smallText}>🧒 Otro hijo/a</Text>
           </Pressable>
         </View>

@@ -21,6 +21,12 @@ export const registroSchema = z.object({
   vinculo: z.enum(["familiar", "socio", "ex_jugador", "amigo", "otro"]).optional().nullable(),
   vinculoDetalle: txt,
   comentarios: z.string().trim().max(2000).optional().nullable().transform((v) => (v ? v : null)),
+  comoConocio: z.enum(["colegio", "instagram", "parque", "evento", "socio", "otro"], { error: "invalido" }).optional().nullable(),
+  referidoPor: txt,
+  comoConocioDetalle: txt,
+  hermanosProspecto: z.boolean().optional().nullable(),
+  hermanosDetalle: txt,
+  adultoNombre: txt,
 });
 export type RegistroInput = z.infer<typeof registroSchema>;
 
@@ -47,6 +53,8 @@ export function toApiRegistro(r: RegistroRow) {
     email: r.email, familiaEnClub: r.familia_en_club, contento: r.contento,
     conoceQuienDejo: r.conoce_quien_dejo, quienDejoDetalle: r.quien_dejo_detalle,
     vinculo: r.vinculo, vinculoDetalle: r.vinculo_detalle, comentarios: r.comentarios,
+    comoConocio: r.como_conocio, referidoPor: r.referido_por, comoConocioDetalle: r.como_conocio_detalle, hermanosProspecto: r.hermanos_prospecto,
+    hermanosDetalle: r.hermanos_detalle, adultoNombre: r.adulto_nombre,
     socio: r.socio_nro, appVersion: r.app_version, createdAt: r.created_at.toISOString(),
   };
 }

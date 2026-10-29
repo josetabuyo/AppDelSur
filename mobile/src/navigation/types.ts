@@ -5,10 +5,10 @@ import type { PadronPersona } from '../services/api';
 export type RootStackParamList = {
   Inicio: undefined;
   Padron: undefined;
-  Ficha: { persona: PadronPersona };
+  /** Del padrón (persona) o cargando a alguien nuevo (cargaPara). */
+  Ficha: { persona?: PadronPersona; cargaPara?: CargaPara };
   Bienvenida: undefined;
   SosJugador: undefined;
-  Cuestionario: { cargaPara: CargaPara };
   Enrolamiento: undefined;
   Gracias: { nombre: string; tipo: 'jugador' | 'comunidad'; cargaPara: CargaPara };
 };

@@ -11,29 +11,25 @@ type Props = {
   onChange: (v: string) => void;
   /** Busca opciones para lo tipeado (ya con debounce). */
   buscar: (q: string) => Promise<Opcion[]>;
-  /** Qué hacer al elegir una opción (por defecto: "Título (detalle)"). */
-  elegir?: (o: Opcion) => void | Promise<void>;
   hint?: string;
-  hintOtro?: string;
   placeholder?: string;
-  placeholderOtro?: string;
   optional?: boolean;
   highlight?: boolean;
   testID?: string;
 };
 
 /**
- * Campo que sugiere de una lista mientras se tipea. Al elegir queda escrito siempre igual (se puede
- * contar y cruzar); "Otro" deja escribir algo que no está en la lista.
+ * Campo que sugiere de una lista mientras se tipea (también al corregir algo ya cargado). Al elegir queda
+ * escrito siempre igual, para poder contar y cruzar; "Otro" deja lo tipeado tal cual, si no está en la lista.
  */
-export function AutocompleteField({ label, value, onChange, buscar, elegir, hint, hintOtro, placeholder, placeholderOtro, optional, highlight, testID }: Props) {
-  const [otro, setOtro] = useState(false);
+export function AutocompleteField({ label, value, onChange, buscar, hint, placeholder, optional, highlight, testID }: Props) {
   const [opciones, setOpciones] = useState<Opcion[]>([]);
-  // Lo último tipeado acá. Si el valor es otro (se eligió de la lista, vino precargado o lo completó
-  // otro campo, como el domicilio a la localidad), está "elegido": fijo, con "Cambiar".
+  // Lo último tipeado acá. Si el valor es otro (se eligió de la lista, se confirmó con "Otro" o vino
+  // precargado), está fijo, con "Cambiar" para corregirlo.
   const tipeado = useRef<string | null>(null);
-  const elegido = !!value && value !== tipeado.current && !otro;
-  const buscando = !otro && !elegido && value.trim().length >= 2;
+  const [, refrescar] = useState(0);
+  const fijo = !!value && value !== tipeado.current;
+  const buscando = !fijo && value.trim().length >= 2;
 
   useEffect(() => {
     if (!buscando) return setOpciones([]);
@@ -51,32 +47,32 @@ export function AutocompleteField({ label, value, onChange, buscar, elegir, hint
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, buscando]);
 
-  const tocar = async (o: Opcion) => {
-    if (elegir) await elegir(o);
-    else onChange(o.detalle ? `${o.titulo} (${o.detalle})` : o.titulo);
+  const fijar = (v: string) => {
+    tipeado.current = null;
+    if (v === value) refrescar((n) => n + 1);
+    else onChange(v);
   };
 
   const lista = buscando ? (
     <View style={styles.lista}>
       {opciones.map((o) => (
-        <Pressable key={o.key} onPress={() => tocar(o)} style={({ pressed }) => [styles.item, pressed && styles.pressed]} accessibilityRole="button">
+        <Pressable key={o.key} onPress={() => fijar(o.detalle ? `${o.titulo} (${o.detalle})` : o.titulo)} style={({ pressed }) => [styles.item, pressed && styles.pressed]} accessibilityRole="button">
           <Text style={styles.titulo}>{o.titulo}</Text>
           {o.detalle ? <Text style={styles.detalle}>{o.detalle}</Text> : null}
         </Pressable>
       ))}
-      <Pressable testID={testID ? `${testID}-otro` : undefined} onPress={() => setOtro(true)} style={({ pressed }) => [styles.item, styles.otro, pressed && styles.pressed]} accessibilityRole="button">
-        <Text style={styles.titulo}>Otro</Text>
-        <Text style={styles.detalle}>No está en la lista: lo escribo yo</Text>
+      <Pressable testID={testID ? `${testID}-otro` : undefined} onPress={() => fijar(value.trim())} style={({ pressed }) => [styles.item, styles.otro, pressed && styles.pressed]} accessibilityRole="button">
+        <Text style={styles.titulo}>Otro: «{value.trim()}»</Text>
+        <Text style={styles.detalle}>No está en la lista: dejarlo como lo escribí</Text>
       </Pressable>
     </View>
-  ) : elegido || otro ? (
+  ) : fijo ? (
     <Text
       style={styles.link}
       accessibilityRole="button"
       onPress={() => {
-        setOtro(false);
-        tipeado.current = '';
-        onChange('');
+        tipeado.current = value;
+        refrescar((n) => n + 1);
       }}
     >
       Cambiar
@@ -88,20 +84,19 @@ export function AutocompleteField({ label, value, onChange, buscar, elegir, hint
       highlight={highlight}
       optional={optional}
       label={label}
-      hint={otro ? hintOtro : hint}
+      hint={hint}
       value={value}
       onChangeText={(v) => {
         tipeado.current = v;
         onChange(v);
       }}
-      editable={!elegido}
-      placeholder={otro ? placeholderOtro : placeholder}
+      editable={!fijo}
+      placeholder={placeholder}
       autoCapitalize="words"
       below={lista}
     />
   );
 }
-
 const styles = StyleSheet.create({
   lista: { marginTop: 6, backgroundColor: colors.white, borderRadius: radius.sm + 2, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   item: { paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#EEF2F6' },

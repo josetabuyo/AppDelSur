@@ -1,4 +1,4 @@
-import type { CargaPara, ComunidadForm, Deporte, JugadorForm, Vinculo } from './forms';
+import type { CargaPara, ComoConocio, ComunidadForm, Deporte, JugadorForm, Vinculo } from './forms';
 import { onlyDigits, parseDate } from './validation';
 
 /** Body de POST /api/v1/registros (docs/contrato-api.md). Los opcionales vacíos no se mandan. */
@@ -22,6 +22,12 @@ export type RegistroPayload = {
   contento?: number | null;
   conoceQuienDejo?: boolean | null;
   quienDejoDetalle?: string;
+  adultoNombre?: string;
+  comoConocio?: ComoConocio | null;
+  referidoPor?: string;
+  comoConocioDetalle?: string;
+  hermanosProspecto?: boolean | null;
+  hermanosDetalle?: string;
   vinculo?: Vinculo | null;
   vinculoDetalle?: string;
   comentarios?: string;
@@ -51,13 +57,14 @@ export function buildJugadorPayload(f: JugadorForm, cargaPara: CargaPara, socio?
     division: opt(f.division),
     colegio: opt(f.colegio),
     localidad: opt(f.localidad),
-    domicilio: opt(f.domicilio),
     telefono: opt(f.telefono),
     email: opt(f.email)?.toLowerCase(),
-    familiaEnClub: opt(f.familiaEnClub),
-    contento: f.contento,
-    conoceQuienDejo: f.conoceQuienDejo,
-    quienDejoDetalle: f.conoceQuienDejo ? opt(f.quienDejoDetalle) : undefined,
+    adultoNombre: cargaPara === 'hijo' ? opt(f.adultoNombre) : undefined,
+    comoConocio: f.comoConocio,
+    referidoPor: f.comoConocio === 'socio' ? opt(f.referidoPor) : undefined,
+    comoConocioDetalle: f.comoConocio === 'otro' ? opt(f.comoConocioDetalle) : undefined,
+    hermanosProspecto: f.hermanos,
+    hermanosDetalle: f.hermanos ? opt(f.hermanosDetalle) : undefined,
   });
 }
 

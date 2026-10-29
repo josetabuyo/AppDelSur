@@ -115,25 +115,23 @@ Ojo: el export trae números de tarjeta en "Forma de Pago" y datos médicos: el 
 
 Pedido del grupo: que los datos se puedan contar sin limpiar a mano.
 
-- **Colegio**: se elige de los 11.041 colegios primarios y secundarios de CABA y Provincia del Padrón
-  Oficial de Establecimientos Educativos (Ministerio de Capital Humano, 2025, CC BY 4.0), primero los de
+- **Colegio**: se elige de los 4.829 colegios primarios y secundarios de CABA y de las localidades de la
+  Provincia a menos de 20 km de Capital, del Padrón Oficial de Establecimientos Educativos (Ministerio de Capital Humano, 2025, CC BY 4.0), primero los de
   Esteban Echeverría y alrededores. "Otro" deja escribir uno que no está; el cruce de esos se hace aparte.
   `backend/data/colegios.json`, se regenera con `scripts/colegios_xlsx_a_json.py`. API: `GET /api/v1/colegios?q=`.
 - **Localidad**: localidades de la Provincia (API Georef, datos abiertos) + los 48 barrios de CABA, con "Otro".
   `backend/data/localidades.json` (`scripts/localidades_georef.py`). API: `GET /api/v1/localidades?q=`.
 - **Teléfono**: solo números, se arma solo como `+54 9 11 5555-6666`.
-- **Domicilio con Google Maps** (lo que espera Joel): ya está programado, se prende con la clave.
-  Georef (gratis) no sirve para direcciones: ubica el club en Tres de Febrero. Sin clave, el domicilio es
-  texto libre. Con clave, el usuario elige una dirección real y la localidad se completa sola.
-  API: `GET /api/v1/direcciones?q=&session=` y `GET /api/v1/direcciones/:id?session=` (con sesión de la app).
+- **Domicilio**: no se pregunta. Joel (encuesta mínima, abajo) pide barrio, no dirección; el barrio sale de
+  la lista de localidades. El autocompletado de direcciones con Google Places quedó programado en el commit
+  c040410 por si algún día hace falta (pide clave de Google con tarjeta).
 
-### Prender Google Maps (lo hace José, pide tarjeta)
+## Encuesta mínima de Joel (2026-10-28)
 
-1. https://console.cloud.google.com → el proyecto de Google de José (o uno nuevo "appdelsur").
-2. Facturación → vincular una cuenta de facturación (tarjeta). Poner una alerta de presupuesto (ej. USD 5).
-3. APIs y servicios → Biblioteca → habilitar **Places API (New)**.
-4. Credenciales → Crear clave de API → restringirla a "Places API (New)".
-5. `cd backend && vercel env add GOOGLE_MAPS_API_KEY production` (pegar la clave) y `bash scripts/publicar.sh`.
-
-Costo: Google da un cupo gratis mensual por SKU; el autocompletado usa sesión (varias teclas + un
-detalle cuentan como una búsqueda). Con ~650 socios cargando una vez queda dentro de lo gratis.
+Reemplaza al cuestionario largo. Una sola pantalla para todos (socio del padrón, hijo/a, compañero/a, nuevo):
+nombre y apellido, fecha de nacimiento (da la categoría), deporte, colegio, barrio, nombre (si es un chico)
+y WhatsApp del adulto responsable, **¿cómo conociste Del Sur?** (colegio, Instagram, Parque Indoamericano,
+evento, me lo recomendó un socio → ¿quién?, otro → texto libre) para medir referidos, y **¿hermanos/as de 4 a 18 que no
+jueguen?** (sí → edad y deporte) para prospectos. DNI, domicilio, "¿estás contento?" y "¿conocés a alguien
+que dejó?" salen de la encuesta (DNI va en la ficha de inscripción). Columnas nuevas en `registros`:
+`como_conocio`, `referido_por`, `como_conocio_detalle`, `hermanos_prospecto`, `hermanos_detalle`, `adulto_nombre` (migración 0002).

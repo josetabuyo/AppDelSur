@@ -83,6 +83,10 @@ Crea un registro (una persona). Un padre puede crear varios (uno por hijo).
 
 - `GET /api/v1/colegios?q=parish` → `{ colegios: [{ nombre, lugar }] }` (público, máx. 12, primero la zona del club).
 - `GET /api/v1/localidades?q=lugano` → `{ localidades: [{ nombre, lugar }] }` (público).
-- `GET /api/v1/direcciones?q=&session=` (Bearer) → `{ disponible, sugerencias: [{ id, nombre, lugar }] }`.
-  Sin `GOOGLE_MAPS_API_KEY` responde `disponible: false` y la app usa texto libre.
-- `GET /api/v1/direcciones/:id?session=` (Bearer) → `{ direccion: { domicilio, localidad, partido, completa } }`.
+
+## Encuesta mínima (campos de `POST /api/v1/registros`, desde 2026-10-29)
+
+Opcionales, además de los anteriores: `comoConocio` (`colegio` | `instagram` | `parque` | `evento` | `socio` | `otro`),
+`referidoPor` (si `socio`), `comoConocioDetalle` (texto libre si `otro`), `hermanosProspecto` (bool: hermanos/as de 4 a 18
+que no juegan), `hermanosDetalle` (edad y deporte), `adultoNombre` (si se carga a un chico; su WhatsApp va en `telefono`).
+La app ya no manda `domicilio`, `familiaEnClub`, `contento` ni `conoceQuienDejo`; el backend los sigue aceptando (apps viejas).

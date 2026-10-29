@@ -28,3 +28,10 @@ describe("buscarLocalidades", () => {
     expect(buscarLocalidades("evita")[0]).toEqual({ nombre: "Ciudad Evita", lugar: "La Matanza" });
   });
 });
+
+describe("buscarColegios: solo CABA y hasta 20 km", () => {
+  it("no trae colegios del interior de la provincia", () => {
+    expect(buscarColegios("primaria azul").some((c) => /Azul$/.test(c.lugar))).toBe(false);
+    expect(buscarColegios("parish")[0].lugar).toMatch(/Esteban Echeverría$/);
+  });
+});

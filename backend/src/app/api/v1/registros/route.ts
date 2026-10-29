@@ -19,6 +19,9 @@ export async function POST(req: NextRequest) {
     familia_en_club: d.familiaEnClub ?? null, contento: d.contento ?? null,
     conoce_quien_dejo: d.conoceQuienDejo ?? null, quien_dejo_detalle: d.quienDejoDetalle ?? null,
     vinculo: d.vinculo ?? null, vinculo_detalle: d.vinculoDetalle ?? null, comentarios: d.comentarios ?? null,
+    como_conocio: d.comoConocio ?? null, referido_por: d.referidoPor ?? null, como_conocio_detalle: d.comoConocioDetalle ?? null,
+    hermanos_prospecto: d.hermanosProspecto ?? null, hermanos_detalle: d.hermanosDetalle ?? null,
+    adulto_nombre: d.adultoNombre ?? null,
     app_version: req.headers.get("x-app-version"),
   }).returning();
   return json({ registro: toApiRegistro(row) }, 201);

@@ -23,9 +23,9 @@ export default function SosJugadorScreen({ navigation }: ScreenProps<'SosJugador
   const nombre = splitName(user?.name).nombre.split(' ')[0];
 
   const opciones: Opcion[] = [
-    { key: 'yo', emoji: '🏉', title: 'Sí, juego', desc: 'Rugby, hockey o rugby inclusivo', bg: colors.celesteSoft, go: () => navigation.navigate('Cuestionario', { cargaPara: 'yo' }) },
-    { key: 'companero', emoji: '🤜', title: 'Sumo a un compañero/a', desc: 'Lo tenés al lado y no tiene la app: cargalo vos', bg: '#E3F4EA', go: () => navigation.navigate('Cuestionario', { cargaPara: 'companero' }) },
-    { key: 'hijo', emoji: '🧒', title: 'Cargo los datos de mi hijo/a', desc: 'Para los más chicos que no tienen celu', bg: colors.yellowSoft, go: () => navigation.navigate('Cuestionario', { cargaPara: 'hijo' }) },
+    { key: 'yo', emoji: '🏉', title: 'Sí, juego', desc: 'Rugby, hockey o rugby inclusivo', bg: colors.celesteSoft, go: () => navigation.navigate('Ficha', { cargaPara: 'yo' }) },
+    { key: 'companero', emoji: '🤜', title: 'Sumo a un compañero/a', desc: 'Lo tenés al lado y no tiene la app: cargalo vos', bg: '#E3F4EA', go: () => navigation.navigate('Ficha', { cargaPara: 'companero' }) },
+    { key: 'hijo', emoji: '🧒', title: 'Cargo los datos de mi hijo/a', desc: 'Para los más chicos que no tienen celu', bg: colors.yellowSoft, go: () => navigation.navigate('Ficha', { cargaPara: 'hijo' }) },
     { key: 'comunidad', emoji: '💙', title: 'No juego, soy parte de la comunidad', desc: 'Familia, socio/a, ex jugador/a, amigo/a', bg: '#E8EEF6', go: () => navigation.navigate('Enrolamiento') },
   ];
 

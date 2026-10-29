@@ -4,14 +4,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { ColegioField, LocalidadField } from '../components/ColegioField';
-import { DomicilioField } from '../components/DomicilioField';
 import { Crest } from '../components/Crest';
 import { ScrollViewRef, SectionLabel } from '../components/FormScaffold';
 import { TextField } from '../components/TextField';
-import { emptyJugador, Errors, JugadorForm, validateJugador } from '../lib/forms';
-import { CARITAS, DEPORTES, DIVISIONES } from '../lib/opciones';
+import { CargaPara, ComoConocio, emptyJugador, Errors, JugadorForm, validateJugador } from '../lib/forms';
+import { DEPORTES } from '../lib/opciones';
 import { cargaParaDe, identidadCompleta, prefillDePadron } from '../lib/padron';
-import { buildJugadorPayload } from '../lib/payload';
+import { buildJugadorPayload, splitName } from '../lib/payload';
 import { maskDate, maskPhone } from '../lib/validation';
 import type { ScreenProps } from '../navigation/types';
 import { api, ApiError } from '../services/api';
@@ -19,21 +18,49 @@ import { clearBorrador, getBorrador, setBorrador } from '../services/storage';
 import { useSession } from '../state/session';
 import { colors, display, fonts, radius } from '../theme';
 
-const IDENTIDAD: (keyof JugadorForm)[] = ['nombre', 'apellido', 'dni', 'fechaNacimiento'];
+const IDENTIDAD: (keyof JugadorForm)[] = ['nombre', 'apellido', 'fechaNacimiento'];
+
+const COMO_CONOCIO: { value: ComoConocio; label: string }[] = [
+  { value: 'colegio', label: 'Colegio' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'parque', label: 'Parque Indoamericano' },
+  { value: 'evento', label: 'Un evento' },
+  { value: 'socio', label: 'Me lo recomendó un socio/a' },
+  { value: 'otro', label: 'Otro' },
+];
+
+/** Las preguntas cambian de persona según quién completa: uno mismo, un hijo/a o un compañero/a. */
+const TEXTOS = {
+  yo: { juega: '¿Qué jugás?', colegio: '¿A qué colegio vas o fuiste?', barrio: '¿En qué barrio o localidad vivís?', whatsapp: 'Tu WhatsApp', conocio: '¿Cómo conociste Del Sur?', hermanos: '¿Tenés hermanos/as o hijos/as de 4 a 18 años que no jueguen en el club?' },
+  hijo: { juega: '¿Qué juega?', colegio: '¿A qué colegio va?', barrio: '¿En qué barrio o localidad viven?', whatsapp: 'Tu WhatsApp', conocio: '¿Cómo conocieron Del Sur?', hermanos: '¿Tiene hermanos/as de 4 a 18 años que no jueguen en el club?' },
+  companero: { juega: '¿Qué juega?', colegio: '¿A qué colegio va o fue?', barrio: '¿En qué barrio o localidad vive?', whatsapp: 'Su WhatsApp', conocio: '¿Cómo conoció Del Sur?', hermanos: '¿Tiene hermanos/as de 4 a 18 años que no jueguen en el club?' },
+} as const;
 
 /**
- * La ficha de un socio del padrón, en una sola pantalla: lo que el club ya sabe viene cargado, el resto
- * se completa scrolleando. Se guarda en el teléfono mientras se tipea y se envía entera con "Listo".
+ * La ficha de un jugador, en una sola pantalla: los datos mínimos que pidió Joel (identidad, deporte,
+ * colegio, barrio, WhatsApp, cómo conoció el club y hermanos que podrían sumarse). Si viene del padrón,
+ * lo que el club ya sabe viene cargado. Se guarda en el teléfono mientras se tipea y se envía con "Listo".
  */
 export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>) {
   const { persona } = route.params;
   const insets = useSafeAreaInsets();
   const { user, token, padron, addRegistro, logout } = useSession();
-  const hijo = cargaParaDe(persona, user?.name) === 'hijo';
+  const cargaPara: CargaPara = persona ? cargaParaDe(persona, user?.name) : (route.params.cargaPara ?? 'yo');
+  const hijo = cargaPara === 'hijo';
+  const companero = cargaPara === 'companero';
+  const t = TEXTOS[cargaPara];
+  const borrador = persona?.socio ?? `nuevo-${cargaPara}`;
   const scrollRef = useRef<ScrollViewRef>(null);
 
-  const [form, setForm] = useState<JugadorForm>(() => emptyJugador({ ...prefillDePadron(persona), email: user?.email ?? '' }));
-  const [editarIdentidad, setEditarIdentidad] = useState(() => !identidadCompleta(persona));
+  const [form, setForm] = useState<JugadorForm>(() => {
+    const yo = splitName(user?.name);
+    const email = companero ? '' : (user?.email ?? '');
+    const adultoNombre = hijo ? (user?.name ?? '') : '';
+    if (persona) return emptyJugador({ ...prefillDePadron(persona), email, adultoNombre });
+    if (hijo) return emptyJugador({ apellido: yo.apellido, email, adultoNombre });
+    return emptyJugador(companero ? {} : { ...yo, email });
+  });
+  const [editarIdentidad, setEditarIdentidad] = useState(() => !persona || !identidadCompleta(persona));
   const [errors, setErrors] = useState<Errors>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -42,18 +69,18 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
 
   // Si quedó un borrador de antes (se cerró la app a mitad), sigue desde ahí.
   useEffect(() => {
-    getBorrador<JugadorForm>(persona.socio).then((b) => {
+    getBorrador<JugadorForm>(borrador).then((b) => {
       if (b) setForm((f) => ({ ...f, ...b }));
       cargado.current = true;
     });
-  }, [persona.socio]);
+  }, [borrador]);
 
   useEffect(() => {
     if (!cargado.current) return;
     setGuardado(false);
-    const t = setTimeout(() => setBorrador(persona.socio, form).then(() => setGuardado(true)), 600);
-    return () => clearTimeout(t);
-  }, [form, persona.socio]);
+    const timer = setTimeout(() => setBorrador(borrador, form).then(() => setGuardado(true)), 600);
+    return () => clearTimeout(timer);
+  }, [form, borrador]);
 
   const set = <K extends keyof JugadorForm>(k: K, v: JugadorForm[K]) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -73,12 +100,12 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
     setBanner(null);
     setSending(true);
     try {
-      const res = await api.crearRegistro(token, buildJugadorPayload(form, hijo ? 'hijo' : 'yo', persona.socio));
+      const res = await api.crearRegistro(token, buildJugadorPayload(form, cargaPara, persona?.socio));
       addRegistro(res.registro);
-      await clearBorrador(persona.socio);
-      const quedan = padron.some((p) => !p.cargado && p.socio !== persona.socio);
+      await clearBorrador(borrador);
+      const quedan = !!persona && padron.some((p) => !p.cargado && p.socio !== persona.socio);
       if (quedan && navigation.canGoBack()) navigation.goBack();
-      else navigation.replace('Gracias', { nombre: form.nombre.trim(), tipo: 'jugador', cargaPara: hijo ? 'hijo' : 'yo' });
+      else navigation.replace('Gracias', { nombre: form.nombre.trim(), tipo: 'jugador', cargaPara });
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         mostrarErrores(err.campos);
@@ -93,8 +120,16 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
     }
   };
 
-  const su = (vos: string, el: string) => (hijo ? el : vos);
-  const divisiones = form.deporte ? DIVISIONES[form.deporte] : [];
+  const primerNombre = form.nombre.split(' ')[0];
+  const titulo = persona
+    ? hijo
+      ? `Datos de ${primerNombre}`
+      : `Hola ${primerNombre}`
+    : hijo
+      ? 'Datos de tu hijo/a'
+      : companero
+        ? 'Tu compañero/a'
+        : 'Contanos de vos';
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -111,8 +146,8 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
             <Crest size={36} />
           </View>
 
-          <Text style={styles.title}>{hijo ? `Datos de ${form.nombre.split(' ')[0]}` : `Hola ${form.nombre.split(' ')[0]}`}</Text>
-          <Text style={styles.sub}>Completá lo que falta. Se guarda solo.</Text>
+          <Text style={styles.title}>{titulo}</Text>
+          <Text style={styles.sub}>{persona ? 'Completá lo que falta. Se guarda solo.' : 'Un minuto. Se guarda solo.'}</Text>
 
           {banner ? <Text style={styles.banner}>{banner}</Text> : null}
 
@@ -120,7 +155,6 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
             <>
               <TextField label="Nombre" value={form.nombre} onChangeText={(v) => set('nombre', v)} error={errors.nombre} autoCapitalize="words" />
               <TextField label="Apellido" value={form.apellido} onChangeText={(v) => set('apellido', v)} error={errors.apellido} autoCapitalize="words" />
-              <TextField label="DNI" optional value={form.dni} onChangeText={(v) => set('dni', v.replace(/[^\d.]/g, ''))} error={errors.dni} keyboardType="number-pad" maxLength={10} />
               <TextField
                 label="Fecha de nacimiento"
                 optional
@@ -138,9 +172,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
                 <Text style={styles.personaName}>
                   {form.nombre} {form.apellido}
                 </Text>
-                <Text style={styles.personaData}>
-                  DNI {form.dni} · {form.fechaNacimiento}
-                </Text>
+                <Text style={styles.personaData}>{[form.fechaNacimiento, form.division].filter(Boolean).join(' · ')}</Text>
               </View>
               <Text testID="editar-persona" accessibilityRole="button" style={styles.personaEdit} onPress={() => setEditarIdentidad(true)}>
                 Editar
@@ -148,58 +180,42 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
             </View>
           )}
 
-          <SectionLabel>{su('¿Qué jugás?', '¿Qué juega?')}</SectionLabel>
+          <SectionLabel>{t.juega}</SectionLabel>
           <View style={styles.chips}>
             {DEPORTES.map((d) => (
               <Chip key={d.value} label={d.label} emoji={d.emoji} selected={form.deporte === d.value} onPress={() => set('deporte', form.deporte === d.value ? null : d.value)} />
             ))}
           </View>
-          {divisiones.length ? (
-            <View style={styles.chips}>
-              {divisiones.map((d) => (
-                <Chip key={d} small label={d} selected={form.division === d} onPress={() => set('division', form.division === d ? '' : d)} />
-              ))}
-            </View>
+
+          <ColegioField label={t.colegio} value={form.colegio} onChange={(v) => set('colegio', v)} />
+          <LocalidadField label={t.barrio} value={form.localidad} onChange={(v) => set('localidad', v)} />
+
+          {hijo ? <TextField label="Tu nombre (mamá, papá o tutor/a)" value={form.adultoNombre} onChangeText={(v) => set('adultoNombre', v)} autoCapitalize="words" /> : null}
+          <TextField label={t.whatsapp} optional value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
+          {companero ? (
+            <TextField label="Su mail" optional value={form.email} onChangeText={(v) => set('email', v)} error={errors.email} keyboardType="email-address" autoCapitalize="none" placeholder="Para que también pueda entrar" />
           ) : null}
 
-          <ColegioField label={su('¿A qué colegio vas o fuiste?', '¿A qué colegio va?')} value={form.colegio} onChange={(v) => set('colegio', v)} />
-          <DomicilioField label={"Domicilio"} value={form.domicilio} onChange={(v) => set('domicilio', v)} onLocalidad={(v) => set('localidad', v)} />
-          <LocalidadField label={su('¿En qué localidad vivís?', '¿En qué localidad viven?')} value={form.localidad} onChange={(v) => set('localidad', v)} />
-          <TextField label={su('Teléfono', 'Tu teléfono (mamá, papá o tutor/a)')} optional value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
-          <TextField label={su('¿Tenés familia en el club?', '¿Tiene hermanos en el club?')} optional value={form.familiaEnClub} onChangeText={(v) => set('familiaEnClub', v)} placeholder="Ej: hermano Tomás en M-12" />
-
-          <SectionLabel>{su('¿Estás contento/a en el club?', '¿Está contento/a en el club?')}</SectionLabel>
-          <View style={styles.faces}>
-            {CARITAS.map((c, i) => {
-              const val = i + 1;
-              const on = form.contento === val;
-              return (
-                <Text
-                  key={c}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${val} de 5`}
-                  onPress={() => set('contento', on ? null : val)}
-                  style={[styles.face, on && styles.faceOn, form.contento !== null && !on && { opacity: 0.4 }]}
-                >
-                  {c}
-                </Text>
-              );
-            })}
-          </View>
-
-          <SectionLabel>¿Conocés a alguien que dejó de venir?</SectionLabel>
+          <SectionLabel>{t.conocio}</SectionLabel>
           <View style={styles.chips}>
-            <Chip label="Sí" selected={form.conoceQuienDejo === true} onPress={() => set('conoceQuienDejo', form.conoceQuienDejo === true ? null : true)} />
-            <Chip label="No" selected={form.conoceQuienDejo === false} onPress={() => set('conoceQuienDejo', form.conoceQuienDejo === false ? null : false)} />
+            {COMO_CONOCIO.map((c) => (
+              <Chip key={c.value} small label={c.label} selected={form.comoConocio === c.value} onPress={() => set('comoConocio', form.comoConocio === c.value ? null : c.value)} />
+            ))}
           </View>
-          {form.conoceQuienDejo ? (
-            <TextField
-              label="¿Quién y por qué?"
-              value={form.quienDejoDetalle}
-              onChangeText={(v) => set('quienDejoDetalle', v)}
-              multiline
-              style={{ minHeight: 90, paddingTop: 12, textAlignVertical: 'top' }}
-            />
+          {form.comoConocio === 'socio' ? (
+            <TextField label="¿Quién?" value={form.referidoPor} onChangeText={(v) => set('referidoPor', v)} placeholder="Nombre y apellido" autoCapitalize="words" />
+          ) : null}
+          {form.comoConocio === 'otro' ? (
+            <TextField label="¿Cómo?" value={form.comoConocioDetalle} onChangeText={(v) => set('comoConocioDetalle', v)} placeholder="Contanos cómo llegaste al club" multiline />
+          ) : null}
+
+          <SectionLabel>{t.hermanos}</SectionLabel>
+          <View style={styles.chips}>
+            <Chip label="Sí" selected={form.hermanos === true} onPress={() => set('hermanos', form.hermanos === true ? null : true)} />
+            <Chip label="No" selected={form.hermanos === false} onPress={() => set('hermanos', form.hermanos === false ? null : false)} />
+          </View>
+          {form.hermanos ? (
+            <TextField label="¿Qué edad tienen y qué deporte les interesa?" value={form.hermanosDetalle} onChangeText={(v) => set('hermanosDetalle', v)} placeholder="Ej: Sofi, 9, hockey" />
           ) : null}
         </View>
       </ScrollView>
@@ -228,18 +244,6 @@ const styles = StyleSheet.create({
   personaName: { fontFamily: fonts.bold, fontSize: 16, color: colors.navy },
   personaData: { fontFamily: fonts.medium, fontSize: 13, color: colors.textMuted, marginTop: 2 },
   personaEdit: { fontFamily: fonts.bold, fontSize: 14, color: colors.celeste, padding: 6 },
-  faces: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    padding: 10,
-    marginBottom: 22,
-  },
-  face: { fontSize: 34, padding: 6, borderRadius: 14, overflow: 'hidden', fontFamily: fonts.body },
-  faceOn: { backgroundColor: colors.yellowSoft, transform: [{ scale: 1.12 }] },
   footer: { paddingHorizontal: 20, paddingTop: 8, backgroundColor: colors.white, borderTopWidth: 1, borderTopColor: '#E4EAF1', gap: 6 },
   saved: { fontFamily: fonts.medium, fontSize: 12.5, color: colors.success, textAlign: 'center' },
 });

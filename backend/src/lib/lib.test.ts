@@ -36,6 +36,13 @@ describe("validateRegistro", () => {
     expect(r.ok && r.data).toMatchObject({ cargaPara: "companero", socio: "123-0" });
     expect(validateRegistro({ ...base, cargaPara: "vecino" }).ok).toBe(false);
   });
+
+  it("acepta la encuesta de Joel: cómo conoció el club, referido, hermanos y adulto responsable", () => {
+    const r = validateRegistro({ ...base, comoConocio: "socio", referidoPor: "Juan Pérez", hermanosProspecto: true, hermanosDetalle: "Sofi, 9, hockey", adultoNombre: "José Tabuyo" });
+    expect(r.ok && r.data).toMatchObject({ comoConocio: "socio", referidoPor: "Juan Pérez", hermanosProspecto: true, hermanosDetalle: "Sofi, 9, hockey", adultoNombre: "José Tabuyo" });
+    expect(validateRegistro({ ...base, comoConocio: "tiktok" }).ok).toBe(false);
+    expect(validateRegistro({ ...base, comoConocio: "otro", comoConocioDetalle: "por un amigo del laburo" }).ok && true).toBe(true);
+  });
   it("falta nombre", () => {
     const r = validateRegistro({ ...base, nombre: undefined });
     expect(r.ok).toBe(false);

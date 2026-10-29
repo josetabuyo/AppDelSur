@@ -35,6 +35,14 @@ export const registros = pgTable("registros", {
   vinculo: text("vinculo", { enum: ["familiar", "socio", "ex_jugador", "amigo", "otro"] }),
   vinculo_detalle: text("vinculo_detalle"),
   comentarios: text("comentarios"),
+  /** Encuesta de Joel (2026-10-28): cómo conoció el club (referidos) y hermanos que podrían sumarse. */
+  como_conocio: text("como_conocio", { enum: ["colegio", "instagram", "parque", "evento", "socio", "otro"] }),
+  referido_por: text("referido_por"),
+  como_conocio_detalle: text("como_conocio_detalle"), // texto libre si eligió "otro"
+  hermanos_prospecto: boolean("hermanos_prospecto"),
+  hermanos_detalle: text("hermanos_detalle"),
+  /** Adulto responsable cuando se cargan los datos de un chico (el WhatsApp va en telefono). */
+  adulto_nombre: text("adulto_nombre"),
   app_version: text("app_version"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow(),

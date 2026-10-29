@@ -2,7 +2,6 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import BienvenidaScreen from '../src/screens/BienvenidaScreen';
-import CuestionarioScreen from '../src/screens/CuestionarioScreen';
 import FichaScreen from '../src/screens/FichaScreen';
 import InicioScreen from '../src/screens/InicioScreen';
 import PadronScreen from '../src/screens/PadronScreen';
@@ -76,7 +75,7 @@ describe('Padrón (lista blanca)', () => {
     await fireEvent.press(screen.getByTestId('socio-1-0'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { persona: jose });
     await fireEvent.press(screen.getByTestId('sumar-companero'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Cuestionario', { cargaPara: 'companero' });
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero' });
     expect(screen.getByTestId('borrar-cuenta')).toBeTruthy();
     mockSession = { status: 'anon', padron: [] };
   });
@@ -89,29 +88,44 @@ describe('Padrón (lista blanca)', () => {
   });
 });
 
-describe('Ficha (socio del padrón, una sola pantalla)', () => {
-  it('viene precargada, todo en una pantalla, y la identidad se puede editar', async () => {
+describe('Ficha (una sola pantalla, campos de Joel)', () => {
+  it('del padrón viene precargada y la identidad se puede editar', async () => {
     mockSession = { status: 'authed', padron: [tomas] };
     await wrap(<FichaScreen navigation={nav()} route={{ key: 'f', name: 'Ficha', params: { persona: tomas } } as never} />);
     expect(screen.getByText('Datos de Tomás')).toBeTruthy();
-    expect(screen.getByText('DNI 45123456 · 04/03/2012')).toBeTruthy();
-    expect(screen.getByText('M-14')).toBeTruthy();
+    expect(screen.getByText('04/03/2012 · M-14')).toBeTruthy();
     expect(screen.getByLabelText('¿A qué colegio va?')).toBeTruthy();
-    expect(screen.getByText('¿Conocés a alguien que dejó de venir?')).toBeTruthy();
+    expect(screen.getByDisplayValue('José Tabuyo')).toBeTruthy(); // adulto responsable, de la cuenta de Google
+    expect(screen.queryByLabelText('DNI')).toBeNull();
     expect(screen.queryByLabelText(/Paso/)).toBeNull();
     await fireEvent.press(screen.getByTestId('editar-persona'));
-    expect(screen.getByDisplayValue('45123456')).toBeTruthy();
+    expect(screen.getByDisplayValue('04/03/2012')).toBeTruthy();
     mockSession = { status: 'anon', padron: [] };
   });
-});
 
-describe('Cuestionario', () => {
-  it('un compañero arranca vacío y no le preguntamos si está contento', async () => {
+  it('pregunta cómo conoció el club (y quién, si fue un socio) y por hermanos que podrían sumarse', async () => {
     mockSession = { status: 'authed', padron: [] };
-    await wrap(<CuestionarioScreen navigation={nav()} route={{ key: 'c', name: 'Cuestionario', params: { cargaPara: 'companero' } } as never} />);
+    await wrap(<FichaScreen navigation={nav()} route={{ key: 'f', name: 'Ficha', params: { cargaPara: 'yo' } } as never} />);
+    expect(screen.getByText('Contanos de vos')).toBeTruthy();
+    expect(screen.getByDisplayValue('José')).toBeTruthy();
+    expect(screen.queryByLabelText('¿Quién?')).toBeNull();
+    await fireEvent.press(screen.getByText('Me lo recomendó un socio/a'));
+    expect(screen.getByLabelText('¿Quién?')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Otro'));
+    expect(screen.queryByLabelText('¿Quién?')).toBeNull();
+    expect(screen.getByLabelText('¿Cómo?')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Sí'));
+    expect(screen.getByLabelText('¿Qué edad tienen y qué deporte les interesa?')).toBeTruthy();
+    expect(screen.queryByText(/contento/)).toBeNull();
+    mockSession = { status: 'anon', padron: [] };
+  });
+
+  it('un compañero arranca vacío y pide su mail', async () => {
+    mockSession = { status: 'authed', padron: [] };
+    await wrap(<FichaScreen navigation={nav()} route={{ key: 'f', name: 'Ficha', params: { cargaPara: 'companero' } } as never} />);
     expect(screen.getByText('Tu compañero/a')).toBeTruthy();
-    expect(screen.getByLabelText('Paso 1 de 3')).toBeTruthy();
     expect(screen.queryByDisplayValue('José')).toBeNull();
+    expect(screen.getByLabelText('Su mail')).toBeTruthy();
     mockSession = { status: 'anon', padron: [] };
   });
 });
@@ -152,11 +166,11 @@ describe('¿Sos jugador?', () => {
     expect(screen.getByText('Juan Tabuyo')).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId('opcion-yo'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Cuestionario', { cargaPara: 'yo' });
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'yo' });
     await fireEvent.press(screen.getByTestId('opcion-companero'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Cuestionario', { cargaPara: 'companero' });
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero' });
     await fireEvent.press(screen.getByTestId('opcion-hijo'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Cuestionario', { cargaPara: 'hijo' });
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'hijo' });
     await fireEvent.press(screen.getByTestId('opcion-comunidad'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Enrolamiento');
   });

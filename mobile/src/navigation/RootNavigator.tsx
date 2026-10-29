@@ -5,7 +5,6 @@ import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { Crest } from '../components/Crest';
 import ActualizarScreen from '../screens/ActualizarScreen';
 import BienvenidaScreen from '../screens/BienvenidaScreen';
-import CuestionarioScreen from '../screens/CuestionarioScreen';
 import FichaScreen from '../screens/FichaScreen';
 import EnrolamientoScreen from '../screens/EnrolamientoScreen';
 import GraciasScreen from '../screens/GraciasScreen';
@@ -66,9 +65,8 @@ export default function RootNavigator() {
             {padron.length === 1 ? <Stack.Screen name="Ficha" component={FichaScreen} initialParams={{ persona: padron[0] }} /> : null}
             {padron.length > 1 ? <Stack.Screen name="Padron" component={PadronScreen} /> : null}
             <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
-            {padron.length > 1 ? <Stack.Screen name="Ficha" component={FichaScreen} /> : null}
             <Stack.Screen name="SosJugador" component={SosJugadorScreen} />
-            <Stack.Screen name="Cuestionario" component={CuestionarioScreen} />
+            {padron.length === 1 ? null : <Stack.Screen name="Ficha" component={FichaScreen} />}
             <Stack.Screen name="Enrolamiento" component={EnrolamientoScreen} />
             <Stack.Screen name="Gracias" component={GraciasScreen} options={{ animation: 'fade', gestureEnabled: false }} />
           </>
