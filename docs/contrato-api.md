@@ -78,3 +78,11 @@ Crea un registro (una persona). Un padre puede crear varios (uno por hijo).
 - `padron` — export "Socios" de la app del tercero (lo pasa la secretaría): socio_nro PK, email (minúsculas, índice; una familia comparte), nombre, apellido, categoria, dni, fecha_nacimiento, actividades, divisiones, titular_grupo. Se reemplaza entero en cada import (`backend/scripts/padron_xls_a_json.py` + `npm run padron:importar`). Sin pagos, tarjetas ni datos médicos.
 - `registros` — id uuid, user_id → users (quien cargó), carga_para, tipo, todos los campos de arriba en snake_case, socio_nro (→ padrón, si vino de ahí), app_version, created_at, updated_at.
   Pensado para v2: un usuario con N registros = grupo familiar; `colegio` texto libre ahora, se normaliza después a tabla `colegios` para el ranking; `division`/`deporte` alimentan asistencia y perfiles.
+
+## Listas para autocompletar
+
+- `GET /api/v1/colegios?q=parish` → `{ colegios: [{ nombre, lugar }] }` (público, máx. 12, primero la zona del club).
+- `GET /api/v1/localidades?q=lugano` → `{ localidades: [{ nombre, lugar }] }` (público).
+- `GET /api/v1/direcciones?q=&session=` (Bearer) → `{ disponible, sugerencias: [{ id, nombre, lugar }] }`.
+  Sin `GOOGLE_MAPS_API_KEY` responde `disponible: false` y la app usa texto libre.
+- `GET /api/v1/direcciones/:id?session=` (Bearer) → `{ direccion: { domicilio, localidad, partido, completa } }`.

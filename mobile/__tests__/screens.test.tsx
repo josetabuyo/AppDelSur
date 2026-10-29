@@ -3,6 +3,7 @@ import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import BienvenidaScreen from '../src/screens/BienvenidaScreen';
 import CuestionarioScreen from '../src/screens/CuestionarioScreen';
+import FichaScreen from '../src/screens/FichaScreen';
 import InicioScreen from '../src/screens/InicioScreen';
 import PadronScreen from '../src/screens/PadronScreen';
 import SosJugadorScreen from '../src/screens/SosJugadorScreen';
@@ -27,15 +28,16 @@ const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top:
 const wrap = (ui: React.ReactElement) => render(<SafeAreaProvider initialMetrics={metrics}>{ui}</SafeAreaProvider>);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const nav = () => ({ navigate: jest.fn(), goBack: jest.fn(), replace: jest.fn(), addListener: jest.fn(() => () => {}) }) as any;
+const nav = () => ({ navigate: jest.fn(), goBack: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => true), addListener: jest.fn(() => () => {}) }) as any;
 
 describe('Inicio (sin sesión)', () => {
-  it('es mínima: escudo, "La app del club" y entrar con Google directo', async () => {
+  it('es mínima: escudo y entrar con Google, sin textos ni cuentas de prueba', async () => {
     mockLoginGoogle.mockClear();
     const navigation = nav();
     await wrap(<InicioScreen navigation={navigation} route={{ key: 'i', name: 'Inicio' } as never} />);
-    expect(screen.getByText('La app del club')).toBeTruthy();
-    expect(screen.queryByText('RUGBY INCLUSIVO')).toBeNull();
+    expect(screen.getByText('Entrar con Google')).toBeTruthy();
+    expect(screen.queryByText('La app del club')).toBeNull();
+    expect(screen.queryByTestId('login-dev-socio')).toBeNull();
     await fireEvent.press(screen.getByTestId('cta-entrar'));
     expect(mockLoginGoogle).toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();
@@ -48,6 +50,7 @@ describe('Bienvenida (con sesión, fuera del padrón)', () => {
     const navigation = nav();
     await wrap(<BienvenidaScreen navigation={navigation} route={{ key: 'b', name: 'Bienvenida' } as never} />);
     expect(screen.getByText('Viví el')).toBeTruthy();
+    expect(screen.getByTestId('salir')).toBeTruthy();
     expect(screen.queryByText(/Pumpas/)).toBeNull();
     expect(screen.getByText('RUGBY INCLUSIVO')).toBeTruthy();
     expect(screen.getByText(/Hola José/)).toBeTruthy();
@@ -61,7 +64,7 @@ const tomas = { socio: '2-0', nombre: 'Tomás', apellido: 'Tabuyo', categoria: '
 const jose = { ...tomas, socio: '1-0', nombre: 'José', dni: '25123456', fechaNacimiento: '1978-01-01', division: 'Plantel Superior', cargado: true };
 
 describe('Padrón (lista blanca)', () => {
-  it('lista a la familia, marca lo cargado y abre el formulario precargado', async () => {
+  it('lista a la familia, marca lo cargado y abre la ficha de cada uno', async () => {
     mockSession = { status: 'authed', padron: [tomas, jose] };
     const navigation = nav();
     await wrap(<PadronScreen navigation={navigation} route={{ key: 'p', name: 'Padron' } as never} />);
@@ -69,9 +72,9 @@ describe('Padrón (lista blanca)', () => {
     expect(screen.getByText('M-14')).toBeTruthy();
     expect(screen.getByText('✓ Listo')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('socio-2-0'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Cuestionario', { cargaPara: 'hijo', persona: tomas });
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { persona: tomas });
     await fireEvent.press(screen.getByTestId('socio-1-0'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Cuestionario', { cargaPara: 'yo', persona: jose });
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { persona: jose });
     await fireEvent.press(screen.getByTestId('sumar-companero'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Cuestionario', { cargaPara: 'companero' });
     expect(screen.getByTestId('borrar-cuenta')).toBeTruthy();
@@ -86,20 +89,23 @@ describe('Padrón (lista blanca)', () => {
   });
 });
 
-describe('Cuestionario', () => {
-  it('desde el padrón saltea "Persona" (ya la sabemos), muestra el resumen y deja editarla', async () => {
+describe('Ficha (socio del padrón, una sola pantalla)', () => {
+  it('viene precargada, todo en una pantalla, y la identidad se puede editar', async () => {
     mockSession = { status: 'authed', padron: [tomas] };
-    await wrap(<CuestionarioScreen navigation={nav()} route={{ key: 'c', name: 'Cuestionario', params: { cargaPara: 'hijo', persona: tomas } } as never} />);
-    expect(screen.getByLabelText('Paso 1 de 2')).toBeTruthy();
-    expect(screen.getByText('Tomás Tabuyo')).toBeTruthy();
+    await wrap(<FichaScreen navigation={nav()} route={{ key: 'f', name: 'Ficha', params: { persona: tomas } } as never} />);
+    expect(screen.getByText('Datos de Tomás')).toBeTruthy();
     expect(screen.getByText('DNI 45123456 · 04/03/2012')).toBeTruthy();
-    expect(screen.getByDisplayValue('M-14')).toBeTruthy();
+    expect(screen.getByText('M-14')).toBeTruthy();
+    expect(screen.getByLabelText('¿A qué colegio va?')).toBeTruthy();
+    expect(screen.getByText('¿Conocés a alguien que dejó de venir?')).toBeTruthy();
+    expect(screen.queryByLabelText(/Paso/)).toBeNull();
     await fireEvent.press(screen.getByTestId('editar-persona'));
-    expect(screen.getByLabelText('Paso 1 de 3')).toBeTruthy();
     expect(screen.getByDisplayValue('45123456')).toBeTruthy();
     mockSession = { status: 'anon', padron: [] };
   });
+});
 
+describe('Cuestionario', () => {
   it('un compañero arranca vacío y no le preguntamos si está contento', async () => {
     mockSession = { status: 'authed', padron: [] };
     await wrap(<CuestionarioScreen navigation={nav()} route={{ key: 'c', name: 'Cuestionario', params: { cargaPara: 'companero' } } as never} />);

@@ -7,6 +7,7 @@ import { FormScaffold, SectionLabel } from '../components/FormScaffold';
 import { TextField } from '../components/TextField';
 import { ComunidadForm, emptyComunidad, Errors, validateComunidad, Vinculo } from '../lib/forms';
 import { buildComunidadPayload, splitName } from '../lib/payload';
+import { maskPhone } from '../lib/validation';
 import type { ScreenProps } from '../navigation/types';
 import { api, ApiError } from '../services/api';
 import { useSession } from '../state/session';
@@ -72,7 +73,7 @@ export default function EnrolamientoScreen({ navigation }: ScreenProps<'Enrolami
         ))}
       </View>
       {vinculo ? <TextField label="Contanos un poco más" optional value={form.vinculoDetalle} onChangeText={(v) => set('vinculoDetalle', v)} placeholder={vinculo.detalle} /> : null}
-      <TextField label="Teléfono" optional value={form.telefono} onChangeText={(v) => set('telefono', v)} error={errors.telefono} keyboardType="phone-pad" placeholder="Ej: 11 5555 5555" />
+      <TextField label="Teléfono" optional value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
     </FormScaffold>
   );
 }

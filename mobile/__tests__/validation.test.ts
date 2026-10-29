@@ -1,4 +1,4 @@
-import { isValidDni, isValidEmail, isValidPhone, maskDate, parseDate } from '../src/lib/validation';
+import { isValidDni, isValidEmail, isValidPhone, maskDate, maskPhone, parseDate } from '../src/lib/validation';
 
 describe('DNI', () => {
   it('acepta 7 u 8 dígitos, con o sin puntos', () => {
@@ -51,5 +51,17 @@ describe('contacto', () => {
     expect(isValidPhone('11 5555-5555')).toBe(true);
     expect(isValidPhone('+54 9 11 5555 5555')).toBe(true);
     expect(isValidPhone('1234')).toBe(false);
+    expect(isValidPhone('011 15 5555 5555')).toBe(false);
+  });
+  it('máscara de teléfono: solo números, con +54 9', () => {
+    expect(maskPhone('1155556666')).toBe('+54 9 11 5555-6666');
+    expect(maskPhone('2215556666')).toBe('+54 9 221 555-6666');
+    expect(maskPhone('11abc55')).toBe('+54 9 11 55');
+    expect(maskPhone('+54 9 11 5555-6666')).toBe('+54 9 11 5555-6666');
+    expect(maskPhone('011 5555 6666')).toBe('+54 9 11 5555-6666');
+    expect(maskPhone('+54 9 11 5555-66667')).toBe('+54 9 11 5555-6666');
+    // borrar todo deja el campo vacío, no "+54 9"
+    expect(maskPhone('+54 9 ')).toBe('');
+    expect(maskPhone('+54 9 1')).toBe('+54 9 1');
   });
 });

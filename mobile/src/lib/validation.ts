@@ -39,9 +39,28 @@ export function isValidEmail(email: string): boolean {
   return !e || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 }
 
+/** Los 10 dígitos de un celular argentino (código de área + número), sin +54, 9, 0 ni 15 adelante. */
+export function phoneNational(input: string): string {
+  let d = onlyDigits(input);
+  if (d.startsWith('549')) d = d.slice(3);
+  else if (d.startsWith('54')) d = d.slice(2);
+  if (d.startsWith('0')) d = d.slice(1);
+  return d;
+}
+
+/** Máscara mientras se tipea: solo números, con el +54 9 adelante. "1155556666" → "+54 9 11 5555-6666". */
+export function maskPhone(input: string): string {
+  const d = phoneNational(input).slice(0, 10);
+  if (!d) return '';
+  const area = d.startsWith('11') ? 2 : 3;
+  const a = d.slice(0, area);
+  const n = d.slice(area);
+  const corte = n.length - 4;
+  const num = n.length > 4 ? `${n.slice(0, corte)}-${n.slice(corte)}` : n;
+  return `+54 9 ${a}${num ? ` ${num}` : ''}`;
+}
+
 export function isValidPhone(phone: string): boolean {
-  const p = phone.trim();
-  if (!p) return true;
-  const d = onlyDigits(p);
-  return d.length >= 8 && d.length <= 15;
+  if (!phone.trim()) return true;
+  return phoneNational(phone).length === 10;
 }

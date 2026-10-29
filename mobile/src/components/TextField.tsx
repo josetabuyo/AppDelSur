@@ -8,9 +8,10 @@ type Props = TextInputProps & {
   error?: string;
   optional?: boolean;
   highlight?: boolean; // dato clave (colegio)
+  below?: React.ReactNode; // debajo del campo, dentro del mismo bloque (ej.: sugerencias)
 };
 
-export function TextField({ label, hint, error, optional, highlight, style, onFocus, onBlur, ...rest }: Props) {
+export function TextField({ label, hint, error, optional, highlight, below, style, onFocus, onBlur, ...rest }: Props) {
   const [focused, setFocused] = useState(false);
   return (
     <View style={[styles.wrap, highlight && styles.highlightWrap]}>
@@ -34,6 +35,7 @@ export function TextField({ label, hint, error, optional, highlight, style, onFo
         }}
         {...rest}
       />
+      {below}
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );

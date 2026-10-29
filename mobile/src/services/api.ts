@@ -67,6 +67,18 @@ export async function request<T>(path: string, { method = 'GET', token, body }: 
 }
 
 export const api = {
+  colegios: (q: string) => request<{ colegios: { nombre: string; lugar: string }[] }>(`/api/v1/colegios?q=${encodeURIComponent(q)}`),
+  localidades: (q: string) => request<{ localidades: { nombre: string; lugar: string }[] }>(`/api/v1/localidades?q=${encodeURIComponent(q)}`),
+  direcciones: (token: string, q: string, session: string) =>
+    request<{ disponible: boolean; sugerencias: { id: string; nombre: string; lugar: string }[] }>(
+      `/api/v1/direcciones?q=${encodeURIComponent(q)}&session=${encodeURIComponent(session)}`,
+      { token },
+    ),
+  direccion: (token: string, id: string, session: string) =>
+    request<{ direccion: { domicilio: string; localidad: string | null; partido: string | null; completa: string } }>(
+      `/api/v1/direcciones/${encodeURIComponent(id)}?session=${encodeURIComponent(session)}`,
+      { token },
+    ),
   health: () => request<{ ok: boolean; minAppVersion: string; latestAppVersion: string }>('/api/v1/health'),
   devLogin: (email: string, name: string) =>
     request<{ token: string; user: User }>('/api/v1/auth/dev-login', { method: 'POST', body: { email, name } }),

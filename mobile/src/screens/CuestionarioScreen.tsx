@@ -2,37 +2,25 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
+import { ColegioField, LocalidadField } from '../components/ColegioField';
+import { DomicilioField } from '../components/DomicilioField';
 import { FormHeader } from '../components/FormHeader';
 import { FormScaffold, ScrollViewRef, SectionLabel } from '../components/FormScaffold';
 import { StepProgress } from '../components/StepProgress';
 import { TextField } from '../components/TextField';
-import { Deporte, emptyJugador, Errors, firstStepWithError, JugadorForm, validateJugador } from '../lib/forms';
-import { identidadCompleta, prefillDePadron } from '../lib/padron';
+import { emptyJugador, Errors, firstStepWithError, JugadorForm, validateJugador } from '../lib/forms';
+import { CARITAS, DEPORTES, DIVISIONES } from '../lib/opciones';
 import { buildJugadorPayload, splitName } from '../lib/payload';
-import { maskDate } from '../lib/validation';
+import { maskDate, maskPhone } from '../lib/validation';
 import type { ScreenProps } from '../navigation/types';
 import { api, ApiError } from '../services/api';
 import { useSession } from '../state/session';
 import { colors, fonts, radius } from '../theme';
 
-const DEPORTES: { value: Deporte; label: string; emoji: string }[] = [
-  { value: 'rugby', label: 'Rugby', emoji: '🏉' },
-  { value: 'hockey', label: 'Hockey', emoji: '🏑' },
-  { value: 'rugby_inclusivo', label: 'Rugby inclusivo', emoji: '🤝' },
-];
-
-// Los nombres que usa el padrón del club ("Rugby > M-16", "Hockey > 6ta (2do Año)").
-const DIVISIONES: Record<Deporte, string[]> = {
-  rugby: ['Escuelita', 'M-9', 'M-10', 'M-11', 'M-12', 'M-13', 'M-14', 'M-15', 'M-16', 'M-17', 'M-18', 'M-19', 'Plantel Superior'],
-  hockey: ['Escuelita', '10ma', '9na', '8va', '7ma', '6ta', '5ta', 'Plantel Superior', 'Mamis'],
-  rugby_inclusivo: ['Infantiles', 'Adultos'],
-};
-
-const CARITAS = ['😞', '🙁', '😐', '🙂', '😍'];
 const STEP_LABELS = ['Persona', 'Club', 'Contacto y charla'];
 
 export default function CuestionarioScreen({ navigation, route }: ScreenProps<'Cuestionario'>) {
-  const { cargaPara, persona } = route.params;
+  const { cargaPara } = route.params;
   const hijo = cargaPara === 'hijo';
   const companero = cargaPara === 'companero';
   const { user, token, addRegistro, logout } = useSession();
@@ -40,15 +28,11 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
 
   const [form, setForm] = useState<JugadorForm>(() => {
     const email = user?.email ?? '';
-    if (persona) return emptyJugador({ ...prefillDePadron(persona), email: companero ? '' : email });
     if (companero) return emptyJugador();
     const n = splitName(user?.name);
     return emptyJugador(hijo ? { apellido: n.apellido, email } : { ...n, email });
   });
-  // Si el padrón ya trae nombre, DNI y fecha, arrancamos en "Club": un paso menos.
-  const [saltarPersona, setSaltarPersona] = useState(() => !!persona && identidadCompleta(persona));
-  const pasos = saltarPersona ? [1, 2] : [0, 1, 2];
-  const [step, setStep] = useState(pasos[0]);
+  const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Errors>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -113,36 +97,34 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
     const e = validateJugador(form, step);
     setErrors(e);
     if (Object.keys(e).length) return;
-    goStep(pasos[pasos.indexOf(step) + 1]);
+    goStep(step + 1);
   };
 
-  const back = () => (step === pasos[0] ? navigation.goBack() : goStep(pasos[pasos.indexOf(step) - 1]));
+  const back = () => (step === 0 ? navigation.goBack() : goStep(step - 1));
 
   // "Atrás" del sistema (Android o navegador) vuelve un paso del cuestionario, no a la pantalla anterior.
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (e) => {
-        if (step === pasos[0] || e.data.action.type !== 'GO_BACK') return;
+        if (step === 0 || e.data.action.type !== 'GO_BACK') return;
         e.preventDefault();
-        goStep(pasos[pasos.indexOf(step) - 1]);
+        goStep(step - 1);
       }),
-    [navigation, step, saltarPersona],
+    [navigation, step],
   );
 
   const submit = async () => {
     const e = validateJugador(form);
     if (Object.keys(e).length) {
       setErrors(e);
-      const s0 = Math.max(0, firstStepWithError(e));
-      if (s0 === 0) setSaltarPersona(false);
-      goStep(s0);
+      goStep(Math.max(0, firstStepWithError(e)));
       return;
     }
     if (!token) return;
     setBanner(null);
     setSending(true);
     try {
-      const res = await api.crearRegistro(token, buildJugadorPayload(form, cargaPara, persona?.socio));
+      const res = await api.crearRegistro(token, buildJugadorPayload(form, cargaPara));
       addRegistro(res.registro);
       navigation.replace('Gracias', { nombre: form.nombre.trim(), tipo: 'jugador', cargaPara });
     } catch (err) {
@@ -150,9 +132,7 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
         const campos = err.campos;
         setErrors(campos);
         setBanner('Revisá los datos marcados.');
-        const s0 = Math.max(0, firstStepWithError(campos));
-        if (s0 === 0) setSaltarPersona(false);
-        goStep(s0);
+        goStep(Math.max(0, firstStepWithError(campos)));
       } else if (err instanceof ApiError && err.status === 401) {
         await logout();
       } else {
@@ -170,13 +150,13 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
       ref={scrollRef}
       banner={banner}
       header={
-        <FormHeader title={t.titles[step]} subtitle={step === pasos[0] && !persona ? t.subtitle : undefined} onBack={back}>
-          <StepProgress step={pasos.indexOf(step)} total={pasos.length} labels={pasos.map((p) => STEP_LABELS[p])} />
+        <FormHeader title={t.titles[step]} subtitle={step === 0 ? t.subtitle : undefined} onBack={back}>
+          <StepProgress step={step} total={3} labels={STEP_LABELS} />
         </FormHeader>
       }
       footer={
         <>
-          {step > pasos[0] ? <Button label="Atrás" variant="outline" onPress={back} style={{ flex: 0.6 }} /> : null}
+          {step > 0 ? <Button label="Atrás" variant="outline" onPress={back} style={{ flex: 0.6 }} /> : null}
           <Button
             testID={last ? 'enviar' : 'seguir'}
             label={last ? 'Enviar' : 'Seguir'}
@@ -208,29 +188,6 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
 
       {step === 1 && (
         <>
-          {saltarPersona ? (
-            <View style={styles.persona}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.personaName}>
-                  {form.nombre} {form.apellido}
-                </Text>
-                <Text style={styles.personaData}>
-                  DNI {form.dni} · {form.fechaNacimiento}
-                </Text>
-              </View>
-              <Text
-                testID="editar-persona"
-                accessibilityRole="button"
-                style={styles.personaEdit}
-                onPress={() => {
-                  setSaltarPersona(false);
-                  goStep(0);
-                }}
-              >
-                Editar
-              </Text>
-            </View>
-          ) : null}
           <SectionLabel>{hijo || companero ? '¿Qué juega?' : '¿Qué jugás?'}</SectionLabel>
           <View style={styles.chips}>
             {DEPORTES.map((d) => (
@@ -245,23 +202,15 @@ export default function CuestionarioScreen({ navigation, route }: ScreenProps<'C
               ))}
             </View>
           ) : null}
-          <TextField
-            highlight
-            label={t.colegio}
-            hint="Así llevamos el club a más escuelas."
-            value={form.colegio}
-            onChangeText={(v) => set('colegio', v)}
-            placeholder="Nombre del colegio"
-            autoCapitalize="words"
-          />
-          <TextField label={t.localidad} optional value={form.localidad} onChangeText={(v) => set('localidad', v)} placeholder="Ej: 9 de Abril, Ciudad Evita, Lugano" autoCapitalize="words" />
-          <TextField label={t.domicilio} optional value={form.domicilio} onChangeText={(v) => set('domicilio', v)} placeholder="Calle y número" />
+          <ColegioField label={t.colegio} value={form.colegio} onChange={(v) => set('colegio', v)} />
+          <DomicilioField label={t.domicilio} value={form.domicilio} onChange={(v) => set('domicilio', v)} onLocalidad={(v) => set('localidad', v)} />
+          <LocalidadField label={t.localidad} value={form.localidad} onChange={(v) => set('localidad', v)} />
         </>
       )}
 
       {step === 2 && (
         <>
-          <TextField label={t.telefono} optional value={form.telefono} onChangeText={(v) => set('telefono', v)} error={errors.telefono} keyboardType="phone-pad" placeholder="Ej: 11 5555 5555" textContentType="telephoneNumber" />
+          <TextField label={t.telefono} optional value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" textContentType="telephoneNumber" />
           {companero ? (
             <TextField label={t.email} optional value={form.email} onChangeText={(v) => set('email', v)} error={errors.email} keyboardType="email-address" autoCapitalize="none" placeholder="Para que también pueda entrar" />
           ) : null}
@@ -324,17 +273,6 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   face: { fontSize: 34, padding: 6, borderRadius: 14, overflow: 'hidden', fontFamily: fonts.body },
-  persona: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.celesteSoft,
-    borderRadius: radius.md,
-    padding: 14,
-    marginBottom: 20,
-  },
-  personaName: { fontFamily: fonts.bold, fontSize: 16, color: colors.navy },
-  personaData: { fontFamily: fonts.medium, fontSize: 13, color: colors.textMuted, marginTop: 2 },
-  personaEdit: { fontFamily: fonts.bold, fontSize: 14, color: colors.celeste, padding: 6 },
   faceOn: { backgroundColor: colors.yellowSoft, transform: [{ scale: 1.12 }] },
 });
 

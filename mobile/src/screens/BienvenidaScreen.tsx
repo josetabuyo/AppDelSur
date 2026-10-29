@@ -31,7 +31,7 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
   const bottomH = Math.round(width / 2.5);
   const heroH = topH + 3 + bottomH;
   const famSize = Math.min(width * 0.25, 108);
-  const { user } = useSession();
+  const { user, logout } = useSession();
   const nombre = user?.name?.split(' ')[0];
 
   return (
@@ -103,7 +103,10 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
       >
         <Button label="Seguir" big onPress={() => navigation.navigate('SosJugador')} testID="cta-seguir" />
         <Text style={styles.ctaHint}>
-          {nombre ? `Hola ${nombre} · ` : ''}dos minutos 💙🤍💛
+          {nombre ? `Hola ${nombre} · ` : ''}dos minutos 💙🤍💛 ·{' '}
+          <Text testID="salir" style={styles.salir} onPress={logout} accessibilityRole="link">
+            Salir
+          </Text>
         </Text>
       </LinearGradient>
     </View>
@@ -111,6 +114,7 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
 }
 
 const styles = StyleSheet.create({
+  salir: { textDecorationLine: 'underline' },
   root: { flex: 1, backgroundColor: colors.navy },
   row2: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', gap: 3 },
   tint: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(42,167,223,0.16)' },

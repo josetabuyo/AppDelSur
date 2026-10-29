@@ -110,3 +110,30 @@ Ojo: el export trae números de tarjeta en "Forma de Pago" y datos médicos: el 
 3. Yo: `eas update` a la rama `preview` → los Android que ya la tienen se actualizan solos.
 4. José paga Play → yo rehago las capturas de `docs/play-store/capturas/` (son del flujo viejo) y subo el AAB a prueba cerrada → juntamos 12 testers (Quieta + amigos) y arrancan los 14 días.
 5. Lucas paga Apple → invitación a la cuenta → yo hago el build iOS y TestFlight.
+
+## Colegio, localidad, domicilio y teléfono normalizados (2026-10-28)
+
+Pedido del grupo: que los datos se puedan contar sin limpiar a mano.
+
+- **Colegio**: se elige de los 11.041 colegios primarios y secundarios de CABA y Provincia del Padrón
+  Oficial de Establecimientos Educativos (Ministerio de Capital Humano, 2025, CC BY 4.0), primero los de
+  Esteban Echeverría y alrededores. "Otro" deja escribir uno que no está; el cruce de esos se hace aparte.
+  `backend/data/colegios.json`, se regenera con `scripts/colegios_xlsx_a_json.py`. API: `GET /api/v1/colegios?q=`.
+- **Localidad**: localidades de la Provincia (API Georef, datos abiertos) + los 48 barrios de CABA, con "Otro".
+  `backend/data/localidades.json` (`scripts/localidades_georef.py`). API: `GET /api/v1/localidades?q=`.
+- **Teléfono**: solo números, se arma solo como `+54 9 11 5555-6666`.
+- **Domicilio con Google Maps** (lo que espera Joel): ya está programado, se prende con la clave.
+  Georef (gratis) no sirve para direcciones: ubica el club en Tres de Febrero. Sin clave, el domicilio es
+  texto libre. Con clave, el usuario elige una dirección real y la localidad se completa sola.
+  API: `GET /api/v1/direcciones?q=&session=` y `GET /api/v1/direcciones/:id?session=` (con sesión de la app).
+
+### Prender Google Maps (lo hace José, pide tarjeta)
+
+1. https://console.cloud.google.com → el proyecto de Google de José (o uno nuevo "appdelsur").
+2. Facturación → vincular una cuenta de facturación (tarjeta). Poner una alerta de presupuesto (ej. USD 5).
+3. APIs y servicios → Biblioteca → habilitar **Places API (New)**.
+4. Credenciales → Crear clave de API → restringirla a "Places API (New)".
+5. `cd backend && vercel env add GOOGLE_MAPS_API_KEY production` (pegar la clave) y `bash scripts/publicar.sh`.
+
+Costo: Google da un cupo gratis mensual por SKU; el autocompletado usa sesión (varias teclas + un
+detalle cuentan como una búsqueda). Con ~650 socios cargando una vez queda dentro de lo gratis.

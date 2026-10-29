@@ -14,7 +14,7 @@ type SessionValue = {
   padron: PadronPersona[];
   upgradeRequired: string | false; // false o la minAppVersion pedida
   loginGoogle: () => Promise<void>;
-  loginDev: () => Promise<void>;
+  loginDev: (email: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   /** Borra la cuenta y todo lo cargado en el backend, y cierra la sesión. */
   borrarCuenta: () => Promise<void>;
@@ -90,8 +90,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       padron,
       upgradeRequired,
       loginGoogle: async () => loginWith(await loginWithBrowser()),
-      loginDev: async () => {
-        const r = await api.devLogin('prueba@delsur.dev', 'Socia de Prueba');
+      loginDev: async (email: string, name: string) => {
+        const r = await api.devLogin(email, name);
         await loginWith(r.token);
       },
       logout,

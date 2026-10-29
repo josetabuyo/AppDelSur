@@ -6,10 +6,10 @@ import { Crest } from '../components/Crest';
 import ActualizarScreen from '../screens/ActualizarScreen';
 import BienvenidaScreen from '../screens/BienvenidaScreen';
 import CuestionarioScreen from '../screens/CuestionarioScreen';
+import FichaScreen from '../screens/FichaScreen';
 import EnrolamientoScreen from '../screens/EnrolamientoScreen';
 import GraciasScreen from '../screens/GraciasScreen';
 import InicioScreen from '../screens/InicioScreen';
-import LoginScreen from '../screens/LoginScreen';
 import PadronScreen from '../screens/PadronScreen';
 import SosJugadorScreen from '../screens/SosJugadorScreen';
 import { useSession } from '../state/session';
@@ -62,18 +62,18 @@ export default function RootNavigator() {
         {status === 'authed' ? (
           <>
             {/* En el padrón (lista blanca de mails): directo a sus datos. Si no, la presentación del club. */}
-            {padron.length ? <Stack.Screen name="Padron" component={PadronScreen} /> : null}
+            {/* Un solo jugador con ese mail: directo a su ficha. Una familia: primero la lista. */}
+            {padron.length === 1 ? <Stack.Screen name="Ficha" component={FichaScreen} initialParams={{ persona: padron[0] }} /> : null}
+            {padron.length > 1 ? <Stack.Screen name="Padron" component={PadronScreen} /> : null}
             <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
+            {padron.length > 1 ? <Stack.Screen name="Ficha" component={FichaScreen} /> : null}
             <Stack.Screen name="SosJugador" component={SosJugadorScreen} />
             <Stack.Screen name="Cuestionario" component={CuestionarioScreen} />
             <Stack.Screen name="Enrolamiento" component={EnrolamientoScreen} />
             <Stack.Screen name="Gracias" component={GraciasScreen} options={{ animation: 'fade', gestureEnabled: false }} />
           </>
         ) : (
-          <>
-            <Stack.Screen name="Inicio" component={InicioScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-          </>
+          <Stack.Screen name="Inicio" component={InicioScreen} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

@@ -3,7 +3,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CuentaFooter } from '../components/CuentaFooter';
 import { FormHeader } from '../components/FormHeader';
-import { cargaParaDe } from '../lib/padron';
 import { splitName } from '../lib/payload';
 import type { ScreenProps } from '../navigation/types';
 import { useSession } from '../state/session';
@@ -35,7 +34,7 @@ export default function PadronScreen({ navigation }: ScreenProps<'Padron'>) {
             key={p.socio}
             testID={`socio-${p.socio}`}
             accessibilityRole="button"
-            onPress={() => navigation.navigate('Cuestionario', { cargaPara: cargaParaDe(p, user?.name), persona: p })}
+            onPress={() => navigation.navigate('Ficha', { persona: p })}
             style={({ pressed }) => [styles.card, p.cargado && styles.cardDone, pressed && { opacity: 0.9 }]}
           >
             <Text style={styles.emoji}>{p.deporte ? DEPORTE_EMOJI[p.deporte] : '💙'}</Text>
