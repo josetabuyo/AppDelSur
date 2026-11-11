@@ -55,6 +55,8 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
   const hijo = cargaPara === 'hijo';
   const companero = cargaPara === 'companero';
   const t = TEXTOS[cargaPara];
+  // Otros jugadores que esta cuenta ya sumó a mano (no los del padrón ni esta misma ficha).
+  const agregados = registros.filter((r) => r.tipo === 'jugador' && !r.socio && r.cargaPara !== 'yo' && r.id !== previo?.id);
   const borrador = persona?.socio ?? previo?.id ?? `nuevo-${cargaPara}`;
   const scrollRef = useRef<ScrollViewRef>(null);
 
@@ -94,29 +96,33 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
     if (errors[k as string]) setErrors((e) => ({ ...e, [k]: undefined }));
   };
 
+  // El aviso va junto al botón (no se sube la pantalla): cada campo marca su error en rojo.
+  const NOMBRES: Record<string, string> = { nombre: 'el nombre', apellido: 'el apellido', fechaNacimiento: 'la fecha', telefono: 'el WhatsApp', email: 'el mail' };
   const mostrarErrores = (e: Errors) => {
     setErrors(e);
     if (IDENTIDAD.some((k) => e[k as string])) setEditarIdentidad(true);
-    scrollRef.current?.scrollTo({ y: 0, animated: true });
+    const cuales = Object.keys(e).filter((k) => e[k]).map((k) => NOMBRES[k] ?? k);
+    setBanner(`Revisá ${cuales.join(', ')}.`);
   };
 
   const listo = async () => {
-    const e = validateJugador(form);
+    // El DNI no se muestra (viene del padrón): si vino mal, no lo mandamos en vez de trabar el guardado.
+    const { dni: dniMal, ...e } = validateJugador(form);
     if (Object.keys(e).length) return mostrarErrores(e);
+    const aEnviar = dniMal ? { ...form, dni: '' } : form;
     if (!token) return;
     setBanner(null);
     setSending(true);
     try {
-      const res = await api.crearRegistro(token, buildJugadorPayload(form, cargaPara, persona?.socio, persona ? undefined : previo?.id));
+      const res = await api.crearRegistro(token, buildJugadorPayload(aEnviar, cargaPara, persona?.socio ?? previo?.socio, persona ? undefined : previo?.id));
       addRegistro(res.registro);
       await clearBorrador(borrador);
       const quedan = !!persona && padron.some((p) => !p.cargado && p.socio !== persona.socio);
       if ((route.params.volver || quedan) && navigation.canGoBack()) navigation.goBack();
-      else navigation.replace('Gracias', { nombre: form.nombre.trim(), tipo: 'jugador', cargaPara });
+      else navigation.replace('Bienvenida', { gracias: form.nombre.trim() }); // no queda nada pendiente: a la institucional
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         mostrarErrores(err.campos);
-        setBanner('Revisá los datos marcados.');
       } else if (err instanceof ApiError && err.status === 401) {
         await logout();
       } else {
@@ -157,8 +163,6 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
 
           <Text style={styles.title}>{titulo}</Text>
           <Text style={styles.sub}>{previo ? 'Esto es lo que ya cargaste. Completá lo que falta.' : 'Completá lo que sepas; podés seguir otro día.'}</Text>
-
-          {banner ? <Text style={styles.banner}>{banner}</Text> : null}
 
           {editarIdentidad ? (
             <>
@@ -236,6 +240,19 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
             <TextField label="¿Qué edad tienen y qué deporte les interesa?" value={form.hermanosDetalle} onChangeText={(v) => set('hermanosDetalle', v)} placeholder="Ej: Sofi, 9, hockey" />
           ) : null}
 
+          {agregados.length ? (
+            <Text style={styles.agregados}>
+              Ya sumaste:{' '}
+              {agregados.map((r, i) => (
+                <Text key={r.id}>
+                  {i > 0 ? ' · ' : ''}
+                  <Text testID={`editar-${r.id}`} style={styles.agregadoLink} onPress={() => navigation.push('Ficha', { registro: r, volver: true })}>
+                    {r.nombre} {r.apellido}
+                  </Text>
+                </Text>
+              ))}
+            </Text>
+          ) : null}
           <View style={styles.otro}>
             <Button testID="agregar-otro" label="Agregar otro jugador" variant="outline" onPress={() => navigation.push('Ficha', { cargaPara: 'companero', volver: true })} />
           </View>
@@ -243,8 +260,9 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
+        {banner ? <Text testID="aviso" style={styles.banner}>{banner}</Text> : null}
         <Text testID="guardado" style={styles.saved}>
-          {guardado ? '✓ Guardado en el teléfono' : ' '}
+          {guardado ? '✓ Borrador en el teléfono · tocá Guardar para enviarlo' : ' '}
         </Text>
         <Button testID="listo" label="Guardar" onPress={listo} loading={sending} />
       </View>
@@ -258,11 +276,13 @@ const styles = StyleSheet.create({
   inner: { width: '100%', maxWidth: 520 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   back: { fontSize: 34, lineHeight: 36, color: colors.navy, paddingRight: 12 },
-  otro: { marginTop: 18 },
+  otro: { marginTop: 12 },
+  agregados: { fontFamily: fonts.medium, fontSize: 14, color: colors.textMuted, marginTop: 18 },
+  agregadoLink: { color: colors.navy, textDecorationLine: 'underline' },
   salir: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textMuted, textDecorationLine: 'underline' },
   title: { ...display(36), color: colors.navy },
   sub: { fontFamily: fonts.medium, fontSize: 15, color: colors.textMuted, marginTop: 4, marginBottom: 22 },
-  banner: { fontFamily: fonts.semibold, color: colors.error, fontSize: 14, backgroundColor: '#FDECEE', borderRadius: radius.md, padding: 14, marginBottom: 16, overflow: 'hidden' },
+  banner: { fontFamily: fonts.semibold, color: colors.error, fontSize: 14, backgroundColor: '#FDECEE', borderRadius: radius.md, padding: 12, overflow: 'hidden', textAlign: 'center' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
   persona: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.celesteSoft, borderRadius: radius.md, padding: 14, marginBottom: 22 },
   personaName: { fontFamily: fonts.bold, fontSize: 16, color: colors.navy },

@@ -61,10 +61,10 @@ export default function RootNavigator() {
           <>
             {/* En el padrón (lista blanca de mails): directo a sus datos. Si no, la presentación del club. */}
             {/* Un solo jugador con ese mail: directo a su ficha. Una familia: primero la lista. */}
-            {padron.length === 1 ? <Stack.Screen name="Ficha" component={FichaScreen} initialParams={{ persona: padron[0] }} /> : null}
+            {padron.length === 1 ? <Stack.Screen name="FichaPropia" component={FichaScreen as never} initialParams={{ persona: padron[0] }} /> : null}
             {padron.length > 1 ? <Stack.Screen name="Padron" component={PadronScreen} /> : null}
             <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
-            {padron.length === 1 ? null : <Stack.Screen name="Ficha" component={FichaScreen} />}
+            <Stack.Screen name="Ficha" component={FichaScreen} />
             <Stack.Screen name="Enrolamiento" component={EnrolamientoScreen} />
             <Stack.Screen name="Gracias" component={GraciasScreen} options={{ animation: 'fade', gestureEnabled: false }} />
           </>

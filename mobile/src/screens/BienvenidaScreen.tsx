@@ -35,11 +35,17 @@ function Foto({ source, alto, titulo, texto }: { source: number; alto: number; t
  * ficha). Después los banners, de lo deportivo a lo social. Abajo, "Quiero ser parte del club" para la
  * familia, socios, ex jugadores y amigos.
  */
-export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida'>) {
+export default function BienvenidaScreen({ navigation, route }: ScreenProps<'Bienvenida'>) {
   const insets = useSafeAreaInsets();
   const { width: winW } = useWindowDimensions();
   const alto = Math.round((Math.min(winW, 520) - 44) / 1.6);
-  const { user, registros } = useSession();
+  const { user, registros, padron } = useSession();
+  const gracias = route.params?.gracias;
+  // Un jugador ya guardado del padrón se reabre como persona (con su tarjeta); los demás, por su ficha.
+  const abrir = (r: (typeof registros)[number]) => {
+    const p = r.socio ? padron.find((x) => x.socio === r.socio) : undefined;
+    navigation.navigate('Ficha', p ? { persona: p } : { registro: r });
+  };
   const nombre = user?.name?.split(' ')[0];
   const jugadores = registros.filter((r) => r.tipo === 'jugador');
 
@@ -55,25 +61,34 @@ export default function BienvenidaScreen({ navigation }: ScreenProps<'Bienvenida
         </View>
 
         {/* Lo deportivo: el jugador, primero y sin vueltas. */}
-        <Text style={styles.hola}>{nombre ? `Hola ${nombre}` : 'Hola'}</Text>
-        <Text style={styles.titulo}>¿Jugás o querés jugar?</Text>
-        <Button testID="soy-jugador" label="Soy jugador" big onPress={() => navigation.navigate('Ficha', { cargaPara: 'yo' })} />
-        <Text testID="otro-jugador" accessibilityRole="button" style={styles.link} onPress={() => navigation.navigate('Ficha', { cargaPara: 'companero' })}>
-          Agregar otro jugador (tu hijo/a, un compañero/a)
-        </Text>
+        {gracias ? (
+          <View testID="gracias" style={styles.gracias}>
+            <Text style={styles.graciasTitulo}>¡Gracias{gracias ? `, ${gracias}` : ''}! 💙🤍💛</Text>
+            <Text style={styles.graciasText}>Quedó guardado. Podés volver cuando quieras a completar o corregir.</Text>
+          </View>
+        ) : null}
         {jugadores.length ? (
-          <Text style={styles.ya}>
-            Ya cargaste:{' '}
-            {jugadores.map((r, i) => (
-              <Text key={r.id}>
-                {i > 0 ? ' · ' : ''}
-                <Text testID={`editar-${r.id}`} style={styles.yaLink} onPress={() => navigation.navigate('Ficha', { registro: r })}>
-                  {r.nombre} {r.apellido}
-                </Text>
+          <>
+            <Text style={styles.hola}>{nombre ? `Hola ${nombre}` : 'Hola'}</Text>
+            <Text style={styles.titulo}>Tus jugadores</Text>
+            {jugadores.map((r) => (
+              <Text key={r.id} testID={`editar-${r.id}`} accessibilityRole="button" style={styles.jugador} onPress={() => abrir(r)}>
+                {r.nombre} {r.apellido}
+                <Text style={styles.jugadorEdit}>  Editar ›</Text>
               </Text>
             ))}
-          </Text>
-        ) : null}
+            <Button testID="otro-jugador" label="Agregar otro jugador" variant="light" onPress={() => navigation.navigate('Ficha', { cargaPara: 'companero', volver: true })} />
+          </>
+        ) : (
+          <>
+            <Text style={styles.hola}>{nombre ? `Hola ${nombre}` : 'Hola'}</Text>
+            <Text style={styles.titulo}>¿Jugás o querés jugar?</Text>
+            <Button testID="soy-jugador" label="Soy jugador" big onPress={() => navigation.navigate('Ficha', { cargaPara: 'yo' })} />
+            <Text testID="otro-jugador" accessibilityRole="button" style={styles.link} onPress={() => navigation.navigate('Ficha', { cargaPara: 'companero', volver: true })}>
+              Agregar otro jugador (tu hijo/a, un compañero/a)
+            </Text>
+          </>
+        )}
 
         {/* Banners: de lo deportivo a lo social. */}
         <View style={styles.banners}>
@@ -116,8 +131,11 @@ const styles = StyleSheet.create({
   hola: { fontFamily: fonts.semibold, fontSize: 16, color: 'rgba(255,255,255,0.75)' },
   titulo: { ...display(40), color: colors.white, marginTop: 2, marginBottom: 18 },
   link: { fontFamily: fonts.semibold, fontSize: 14.5, color: colors.celeste, textAlign: 'center', marginTop: 14, textDecorationLine: 'underline' },
-  ya: { fontFamily: fonts.medium, fontSize: 13.5, color: 'rgba(255,255,255,0.75)', textAlign: 'center', marginTop: 12 },
-  yaLink: { color: colors.white, textDecorationLine: 'underline' },
+  gracias: { backgroundColor: 'rgba(242,217,78,0.14)', borderRadius: radius.md, padding: 14, marginBottom: 22, borderWidth: 1, borderColor: 'rgba(242,217,78,0.4)' },
+  graciasTitulo: { fontFamily: fonts.bold, fontSize: 17, color: colors.yellow },
+  graciasText: { fontFamily: fonts.medium, fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
+  jugador: { fontFamily: fonts.bold, fontSize: 17, color: colors.white, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 16, marginBottom: 10, overflow: 'hidden' },
+  jugadorEdit: { fontFamily: fonts.semibold, fontSize: 14, color: colors.celeste },
   banners: { gap: 12, marginTop: 34 },
   foto: { borderRadius: radius.lg, overflow: 'hidden', justifyContent: 'flex-end' },
   fotoText: { padding: 16 },

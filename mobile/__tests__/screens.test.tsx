@@ -50,12 +50,12 @@ describe('Bienvenida (con sesión, fuera del padrón)', () => {
     expect(screen.getByText(/Hola José/)).toBeTruthy();
     expect(screen.queryByText(/Pumpas/)).toBeNull();
     expect(screen.getByText('RUGBY INCLUSIVO DEL SUR')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('soy-jugador'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'yo' });
-    await fireEvent.press(screen.getByTestId('otro-jugador'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero' });
+    // Ya cargó a Juan: arriba están sus jugadores para editar y "Agregar otro jugador".
+    expect(screen.queryByTestId('soy-jugador')).toBeNull();
     await fireEvent.press(screen.getByTestId('editar-r1'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { registro: expect.objectContaining({ id: 'r1' }) });
+    await fireEvent.press(screen.getByTestId('otro-jugador'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero', volver: true });
     await fireEvent.press(screen.getByTestId('ser-parte'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Enrolamiento');
     mockSession = { status: 'anon', padron: [] };
