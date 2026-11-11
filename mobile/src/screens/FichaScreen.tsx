@@ -9,7 +9,7 @@ import { ScrollViewRef, SectionLabel } from '../components/FormScaffold';
 import { TextField } from '../components/TextField';
 import { CargaPara, ComoConocio, emptyJugador, Errors, JugadorForm, validateJugador } from '../lib/forms';
 import { DEPORTES } from '../lib/opciones';
-import { cargaParaDe, identidadCompleta, prefillDePadron } from '../lib/padron';
+import { cargaParaDe, formDeRegistro, identidadCompleta, prefillDePadron } from '../lib/padron';
 import { buildJugadorPayload, splitName } from '../lib/payload';
 import { maskDate, maskPhone } from '../lib/validation';
 import type { ScreenProps } from '../navigation/types';
@@ -42,25 +42,32 @@ const TEXTOS = {
  * lo que el club ya sabe viene cargado. Se guarda en el teléfono mientras se tipea y se envía con "Listo".
  */
 export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>) {
-  const { persona } = route.params;
   const insets = useSafeAreaInsets();
-  const { user, token, padron, addRegistro, logout } = useSession();
-  const cargaPara: CargaPara = persona ? cargaParaDe(persona, user?.name) : (route.params.cargaPara ?? 'yo');
+  const { user, token, padron, registros, addRegistro, logout } = useSession();
+  // La persona del padrón, fresca de la sesión (trae lo último que se guardó de ella).
+  const persona = route.params.persona ? (padron.find((p) => p.socio === route.params.persona!.socio) ?? route.params.persona) : undefined;
+  const cargaPara: CargaPara = persona ? cargaParaDe(persona, user?.name) : (route.params.registro?.cargaPara ?? route.params.cargaPara ?? 'yo');
+  // Lo ya enviado: del socio del padrón, la ficha que se abrió para corregir, o la propia ("yo") si ya la mandó.
+  const previo =
+    persona?.registro ??
+    route.params.registro ??
+    (cargaPara === 'yo' && !persona ? registros.find((r) => r.tipo === 'jugador' && r.cargaPara === 'yo' && !r.socio) : undefined);
   const hijo = cargaPara === 'hijo';
   const companero = cargaPara === 'companero';
   const t = TEXTOS[cargaPara];
-  const borrador = persona?.socio ?? `nuevo-${cargaPara}`;
+  const borrador = persona?.socio ?? previo?.id ?? `nuevo-${cargaPara}`;
   const scrollRef = useRef<ScrollViewRef>(null);
 
   const [form, setForm] = useState<JugadorForm>(() => {
     const yo = splitName(user?.name);
     const email = companero ? '' : (user?.email ?? '');
     const adultoNombre = hijo ? (user?.name ?? '') : '';
-    if (persona) return emptyJugador({ ...prefillDePadron(persona), email, adultoNombre });
-    if (hijo) return emptyJugador({ apellido: yo.apellido, email, adultoNombre });
-    return emptyJugador(companero ? {} : { ...yo, email });
+    const antes = previo ? formDeRegistro(previo) : {};
+    if (persona) return emptyJugador({ ...prefillDePadron(persona), email, adultoNombre, ...antes });
+    if (hijo) return emptyJugador({ apellido: yo.apellido, email, adultoNombre, ...antes });
+    return emptyJugador(companero ? { ...antes } : { ...yo, email, ...antes });
   });
-  const [editarIdentidad, setEditarIdentidad] = useState(() => !persona || !identidadCompleta(persona));
+  const [editarIdentidad, setEditarIdentidad] = useState(() => !(persona ? identidadCompleta(persona) : previo));
   const [errors, setErrors] = useState<Errors>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -100,7 +107,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
     setBanner(null);
     setSending(true);
     try {
-      const res = await api.crearRegistro(token, buildJugadorPayload(form, cargaPara, persona?.socio));
+      const res = await api.crearRegistro(token, buildJugadorPayload(form, cargaPara, persona?.socio, persona ? undefined : previo?.id));
       addRegistro(res.registro);
       await clearBorrador(borrador);
       const quedan = !!persona && padron.some((p) => !p.cargado && p.socio !== persona.socio);
@@ -141,13 +148,15 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
                 <Text style={styles.back}>‹</Text>
               </Pressable>
             ) : (
-              <View />
+              <Text testID="salir" accessibilityRole="button" style={styles.salir} onPress={logout}>
+                Salir
+              </Text>
             )}
             <Crest size={36} />
           </View>
 
           <Text style={styles.title}>{titulo}</Text>
-          <Text style={styles.sub}>{persona ? 'Completá lo que falta. Se guarda solo.' : 'Un minuto. Se guarda solo.'}</Text>
+          <Text style={styles.sub}>{previo ? 'Esto es lo que ya cargaste. Completá lo que falta.' : 'Completá lo que sepas; podés seguir otro día.'}</Text>
 
           {banner ? <Text style={styles.banner}>{banner}</Text> : null}
 
@@ -224,7 +233,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
         <Text testID="guardado" style={styles.saved}>
           {guardado ? '✓ Guardado en el teléfono' : ' '}
         </Text>
-        <Button testID="listo" label="Listo" onPress={listo} loading={sending} />
+        <Button testID="listo" label="Guardar" onPress={listo} loading={sending} />
       </View>
     </KeyboardAvoidingView>
   );
@@ -236,6 +245,7 @@ const styles = StyleSheet.create({
   inner: { width: '100%', maxWidth: 520 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   back: { fontSize: 34, lineHeight: 36, color: colors.navy, paddingRight: 12 },
+  salir: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textMuted, textDecorationLine: 'underline' },
   title: { ...display(36), color: colors.navy },
   sub: { fontFamily: fonts.medium, fontSize: 15, color: colors.textMuted, marginTop: 4, marginBottom: 22 },
   banner: { fontFamily: fonts.semibold, color: colors.error, fontSize: 14, backgroundColor: '#FDECEE', borderRadius: radius.md, padding: 14, marginBottom: 16, overflow: 'hidden' },

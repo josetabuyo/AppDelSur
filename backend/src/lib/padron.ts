@@ -1,5 +1,6 @@
-import { eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { getDb, padron, registros, type PadronRow } from "@/db";
+import { toApiRegistro } from "@/lib/registros";
 
 export type Deporte = "rugby" | "hockey" | "rugby_inclusivo";
 
@@ -36,6 +37,8 @@ export type PadronPersona = {
   jugador: boolean;
   /** Ya hay un registro cargado para este socio (por cualquiera). */
   cargado: boolean;
+  /** Lo último que se cargó para este socio, para mostrarlo y seguir completando. */
+  registro: ReturnType<typeof toApiRegistro> | null;
 };
 
 /** Socios del padrón con ese mail (una familia suele compartirlo), y si ya completaron el formulario. */
@@ -44,10 +47,11 @@ export async function padronDeEmail(email: string): Promise<PadronPersona[]> {
   const rows = await db.select().from(padron).where(eq(padron.email, email.trim().toLowerCase()));
   if (!rows.length) return [];
   const hechos = await db
-    .select({ socio: registros.socio_nro })
+    .select()
     .from(registros)
-    .where(inArray(registros.socio_nro, rows.map((r) => r.socio_nro)));
-  const cargados = new Set(hechos.map((h) => h.socio));
+    .where(inArray(registros.socio_nro, rows.map((r) => r.socio_nro)))
+    .orderBy(asc(registros.updated_at));
+  const ultimo = new Map(hechos.map((h) => [h.socio_nro, h])); // el más reciente pisa a los anteriores
   return rows
     .map((r) => ({
       socio: r.socio_nro,
@@ -58,7 +62,8 @@ export async function padronDeEmail(email: string): Promise<PadronPersona[]> {
       fechaNacimiento: r.fecha_nacimiento,
       ...deporteDe(r),
       jugador: esJugador(r),
-      cargado: cargados.has(r.socio_nro),
+      cargado: ultimo.has(r.socio_nro),
+      registro: ultimo.has(r.socio_nro) ? toApiRegistro(ultimo.get(r.socio_nro)!) : null,
     }))
     .sort((a, b) => Number(b.jugador) - Number(a.jugador) || a.nombre.localeCompare(b.nombre));
 }

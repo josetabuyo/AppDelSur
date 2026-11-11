@@ -103,8 +103,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         if (token) await adopt(token);
       },
       addRegistro: (r) => {
-        setRegistros((prev) => [...prev, r]);
-        if (r.socio) setPadron((prev) => prev.map((p) => (p.socio === r.socio ? { ...p, cargado: true } : p)));
+        setRegistros((prev) => (prev.some((x) => x.id === r.id) ? prev.map((x) => (x.id === r.id ? r : x)) : [...prev, r]));
+        if (r.socio) setPadron((prev) => prev.map((p) => (p.socio === r.socio ? { ...p, cargado: true, registro: r } : p)));
       },
     }),
     [status, token, user, registros, padron, upgradeRequired, loginWith, adopt, logout],

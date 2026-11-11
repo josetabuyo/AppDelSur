@@ -67,15 +67,14 @@ describe('Padrón (lista blanca)', () => {
     mockSession = { status: 'authed', padron: [tomas, jose] };
     const navigation = nav();
     await wrap(<PadronScreen navigation={navigation} route={{ key: 'p', name: 'Padron' } as never} />);
-    expect(screen.getByText('Completá tus datos')).toBeTruthy();
+    expect(screen.getByText('¿De quién son los datos?')).toBeTruthy();
     expect(screen.getByText('M-14')).toBeTruthy();
     expect(screen.getByText('✓ Listo')).toBeTruthy();
+    expect(screen.queryByTestId('sumar-companero')).toBeNull();
     await fireEvent.press(screen.getByTestId('socio-2-0'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { persona: tomas });
     await fireEvent.press(screen.getByTestId('socio-1-0'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { persona: jose });
-    await fireEvent.press(screen.getByTestId('sumar-companero'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero' });
     expect(screen.getByTestId('borrar-cuenta')).toBeTruthy();
     mockSession = { status: 'anon', padron: [] };
   });
@@ -117,6 +116,18 @@ describe('Ficha (una sola pantalla, campos de Joel)', () => {
     await fireEvent.press(screen.getByText('Sí'));
     expect(screen.getByLabelText('¿Qué edad tienen y qué deporte les interesa?')).toBeTruthy();
     expect(screen.queryByText(/contento/)).toBeNull();
+    mockSession = { status: 'anon', padron: [] };
+  });
+
+  it('lo ya guardado del socio se muestra para seguir completando', async () => {
+    const guardado = { id: 'r9', tipo: 'jugador', cargaPara: 'hijo', socio: '2-0', nombre: 'Tomás', apellido: 'Tabuyo', colegio: 'Escuela N°5 (9 de Abril · Esteban Echeverría)', telefono: '+5491155556666', hermanosProspecto: true, hermanosDetalle: 'Sofi, 9', createdAt: '' };
+    const conRegistro = { ...tomas, cargado: true, registro: guardado };
+    mockSession = { status: 'authed', padron: [conRegistro] };
+    await wrap(<FichaScreen navigation={nav()} route={{ key: 'f', name: 'Ficha', params: { persona: conRegistro } } as never} />);
+    expect(screen.getByText(/lo que ya cargaste/)).toBeTruthy();
+    expect(screen.getByDisplayValue('+54 9 11 5555-6666')).toBeTruthy();
+    expect(screen.getByDisplayValue('Sofi, 9')).toBeTruthy();
+    expect(screen.getByText('Guardar')).toBeTruthy();
     mockSession = { status: 'anon', padron: [] };
   });
 
@@ -164,6 +175,8 @@ describe('¿Sos jugador?', () => {
     expect(screen.getByText('No juego, soy parte de la comunidad')).toBeTruthy();
     expect(screen.getByText(/Hola José/)).toBeTruthy();
     expect(screen.getByText('Juan Tabuyo')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('editar-r1'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { registro: expect.objectContaining({ id: 'r1' }) });
 
     await fireEvent.press(screen.getByTestId('opcion-yo'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'yo' });

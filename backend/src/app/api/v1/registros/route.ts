@@ -1,28 +1,15 @@
 import { NextRequest } from "next/server";
-import { getDb, registros } from "@/db";
 import { authUser, json } from "@/lib/api";
-import { validateRegistro, toApiRegistro } from "@/lib/registros";
+import { guardarRegistro, toApiRegistro, validateRegistro } from "@/lib/registros";
 
+/** Crea la ficha, o la corrige si ya existía (por `id` propio o por socio del padrón del usuario). */
 export async function POST(req: NextRequest) {
   const u = await authUser(req);
   if (!u) return json({ error: "no autorizado" }, 401);
   const body = await req.json().catch(() => null);
   const v = validateRegistro(body);
   if (!v.ok) return json({ error: "validacion", campos: v.campos }, 400);
-  const d = v.data;
-  const db = await getDb();
-  const [row] = await db.insert(registros).values({
-    user_id: u.id, carga_para: d.cargaPara, socio_nro: d.socio ?? null, tipo: d.tipo, nombre: d.nombre, apellido: d.apellido,
-    dni: d.dni ?? null, fecha_nacimiento: d.fechaNacimiento ?? null, deporte: d.deporte ?? null,
-    division: d.division ?? null, colegio: d.colegio ?? null, localidad: d.localidad ?? null,
-    domicilio: d.domicilio ?? null, telefono: d.telefono ?? null, email: d.email ?? null,
-    familia_en_club: d.familiaEnClub ?? null, contento: d.contento ?? null,
-    conoce_quien_dejo: d.conoceQuienDejo ?? null, quien_dejo_detalle: d.quienDejoDetalle ?? null,
-    vinculo: d.vinculo ?? null, vinculo_detalle: d.vinculoDetalle ?? null, comentarios: d.comentarios ?? null,
-    como_conocio: d.comoConocio ?? null, referido_por: d.referidoPor ?? null, como_conocio_detalle: d.comoConocioDetalle ?? null,
-    hermanos_prospecto: d.hermanosProspecto ?? null, hermanos_detalle: d.hermanosDetalle ?? null,
-    adulto_nombre: d.adultoNombre ?? null,
-    app_version: req.headers.get("x-app-version"),
-  }).returning();
-  return json({ registro: toApiRegistro(row) }, 201);
+  const r = await guardarRegistro(u, v.data, req.headers.get("x-app-version"));
+  if ("error" in r) return json({ error: "no encontrado" }, 404);
+  return json({ registro: toApiRegistro(r.row) }, r.creado ? 201 : 200);
 }

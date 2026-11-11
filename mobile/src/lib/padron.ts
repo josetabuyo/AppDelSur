@@ -1,4 +1,5 @@
-import type { PadronPersona } from '../services/api';
+import type { PadronPersona, Registro } from '../services/api';
+import { maskPhone } from './validation';
 import type { CargaPara, JugadorForm } from './forms';
 
 const norm = (s: string) =>
@@ -42,3 +43,31 @@ export function prefillDePadron(p: PadronPersona): Partial<JugadorForm> {
 
 /** Con nombre, DNI y fecha ya cargados en el padrón, el paso "Persona" no hace falta. */
 export const identidadCompleta = (p: PadronPersona) => !!(p.nombre && p.apellido && p.dni && p.fechaNacimiento);
+
+const isoADmy = (iso?: string | null) => {
+  const f = iso?.split('-');
+  return f && f.length === 3 ? `${f[2]}/${f[1]}/${f[0]}` : undefined;
+};
+
+/** Lo que ya se cargó antes (una ficha enviada, completa o a medias), en el formato del formulario. Solo lo que tiene valor. */
+export function formDeRegistro(r: Registro): Partial<JugadorForm> {
+  const f: Partial<JugadorForm> = {
+    nombre: r.nombre,
+    apellido: r.apellido,
+    dni: r.dni ?? undefined,
+    fechaNacimiento: isoADmy(r.fechaNacimiento),
+    deporte: r.deporte ?? undefined,
+    division: r.division ?? undefined,
+    colegio: r.colegio ?? undefined,
+    localidad: r.localidad ?? undefined,
+    telefono: r.telefono ? maskPhone(r.telefono) : undefined,
+    email: r.email ?? undefined,
+    adultoNombre: r.adultoNombre ?? undefined,
+    comoConocio: r.comoConocio ?? undefined,
+    referidoPor: r.referidoPor ?? undefined,
+    comoConocioDetalle: r.comoConocioDetalle ?? undefined,
+    hermanos: r.hermanosProspecto ?? undefined,
+    hermanosDetalle: r.hermanosDetalle ?? undefined,
+  };
+  return Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined && v !== null && v !== '')) as Partial<JugadorForm>;
+}

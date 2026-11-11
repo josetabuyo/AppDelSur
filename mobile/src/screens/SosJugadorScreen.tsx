@@ -36,7 +36,20 @@ export default function SosJugadorScreen({ navigation }: ScreenProps<'SosJugador
         {registros.length > 0 ? (
           <View style={styles.ya}>
             <Text style={styles.yaTitle}>YA CARGASTE ✓</Text>
-            <Text style={styles.yaText}>{registros.map((r) => `${r.nombre} ${r.apellido}`).join(' · ')}</Text>
+            <Text style={styles.yaText}>
+              {registros.map((r, i) => (
+                <Text key={r.id}>
+                  {i > 0 ? ' · ' : ''}
+                  {r.tipo === 'jugador' ? (
+                    <Text testID={`editar-${r.id}`} style={styles.yaLink} onPress={() => navigation.navigate('Ficha', { registro: r })}>
+                      {r.nombre} {r.apellido}
+                    </Text>
+                  ) : (
+                    `${r.nombre} ${r.apellido}`
+                  )}
+                </Text>
+              ))}
+            </Text>
           </View>
         ) : null}
         {opciones.map((o) => (
@@ -68,6 +81,7 @@ const styles = StyleSheet.create({
   body: { padding: 20, gap: 14 },
   ya: { backgroundColor: '#E6F6EF', borderRadius: radius.md, padding: 14, borderWidth: 1, borderColor: '#BFE6D3' },
   yaTitle: { fontFamily: fonts.black, fontSize: 11, letterSpacing: 1.2, color: colors.success },
+  yaLink: { textDecorationLine: 'underline' },
   yaText: { fontFamily: fonts.semibold, fontSize: 14.5, color: colors.text, marginTop: 4 },
   card: {
     flexDirection: 'row',

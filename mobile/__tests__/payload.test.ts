@@ -83,3 +83,11 @@ describe('payload según contrato', () => {
     expect(splitName(null)).toEqual({ nombre: '', apellido: '' });
   });
 });
+
+describe('corregir una ficha ya enviada', () => {
+  it('manda el id solo si se pasa', () => {
+    const f = emptyJugador({ nombre: 'Ana', apellido: 'Gómez' });
+    expect(buildJugadorPayload(f, 'yo')).not.toHaveProperty('id');
+    expect(buildJugadorPayload(f, 'yo', undefined, 'r9').id).toBe('r9');
+  });
+});

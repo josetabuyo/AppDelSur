@@ -3,6 +3,8 @@ import { onlyDigits, parseDate } from './validation';
 
 /** Body de POST /api/v1/registros (docs/contrato-api.md). Los opcionales vacíos no se mandan. */
 export type RegistroPayload = {
+  /** Corrige ese registro propio en vez de crear otro. */
+  id?: string;
   tipo: 'jugador' | 'comunidad';
   cargaPara: CargaPara;
   /** Nº de socio del padrón, si el registro completa a alguien que ya estaba ahí. */
@@ -43,9 +45,10 @@ function compact<T extends object>(o: T): T {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T;
 }
 
-export function buildJugadorPayload(f: JugadorForm, cargaPara: CargaPara, socio?: string): RegistroPayload {
+export function buildJugadorPayload(f: JugadorForm, cargaPara: CargaPara, socio?: string, id?: string): RegistroPayload {
   const dni = onlyDigits(f.dni);
   return compact<RegistroPayload>({
+    id,
     tipo: 'jugador',
     cargaPara,
     socio,

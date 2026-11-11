@@ -15,6 +15,8 @@ export type PadronPersona = {
   division: string | null;
   jugador: boolean;
   cargado: boolean;
+  /** Lo último que se cargó para este socio (para mostrarlo y seguir completando). */
+  registro?: Registro | null;
 };
 export type MeResponse = { user: User; registros: Registro[]; padron?: PadronPersona[] };
 

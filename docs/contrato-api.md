@@ -33,7 +33,7 @@ Atajo solo dev (para tests y simulador sin navegador): `POST /api/v1/auth/dev-lo
 ### `GET /api/v1/me` (Bearer)
 `200 {"user":{"id","email","name","image"},"registros":[Registro,...],"padron":[PadronPersona,...]}` — los registros que cargó este usuario (él, sus hijos, compañeros) y los socios del **padrón** con su mismo mail. `401` sin token válido.
 
-`PadronPersona` = `{"socio","nombre","apellido","categoria","dni","fechaNacimiento":"YYYY-MM-DD"|null,"deporte","division","jugador":bool,"cargado":bool}`. `cargado` = ya existe un registro con ese `socio` (lo haya cargado quien sea). La app filtra `jugador` y, si queda alguno, va directo a completarlos (lista blanca); si no, muestra la presentación del club y "¿sos jugador?". "Familia R.I" se interpreta como rugby inclusivo.
+`PadronPersona` = `{"socio","nombre","apellido","categoria","dni","fechaNacimiento":"YYYY-MM-DD"|null,"deporte","division","jugador":bool,"cargado":bool,"registro":Registro|null}`. `cargado` = ya existe un registro con ese `socio` (lo haya cargado quien sea); `registro` es el último guardado, para que la ficha lo muestre y se siga completando. La app filtra `jugador` y, si queda alguno, va directo a completarlos (lista blanca); si no, muestra la presentación del club y "¿sos jugador?". "Familia R.I" se interpreta como rugby inclusivo.
 
 ### `DELETE /api/v1/me` (Bearer)
 Borra la cuenta y todos sus registros (lo exige Google Play). `200 {"ok":true,"registrosBorrados":N}`. Web: `/borrar-cuenta`.
@@ -68,7 +68,7 @@ Crea un registro (una persona). Un padre puede crear varios (uno por hijo).
   "comentarios": "string?"
 }
 ```
-`201 {"registro":Registro}`; `400 {"error":"validacion","campos":{"nombre":"requerido",...}}` (validación con zod).
+Se puede guardar a medias y volver otro día: con `"id"` (registro propio) o con un `socio` del padrón del propio mail, **corrige** esa ficha (`200`) en vez de crear otra; si no, la crea (`201 {"registro":Registro}`). Un `id` ajeno da `404`. `400 {"error":"validacion","campos":{"nombre":"requerido",...}}` (validación con zod).
 
 `Registro` = el body + `id`, `createdAt`, `appVersion`.
 
