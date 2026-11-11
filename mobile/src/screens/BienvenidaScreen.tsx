@@ -15,12 +15,17 @@ const fotos = {
   rugby: require('../../assets/fotos/foto-rugby.jpg'),
   hockey: require('../../assets/fotos/foto-hockey.jpg'),
   cancha: require('../../assets/fotos/foto-cancha.jpg'),
+  inclusivo: require('../../assets/fotos/foto-inclusivo.jpg'), // del grupo de WhatsApp del equipo (2026-11-07)
 };
 
-function Foto({ source, alto, titulo, texto }: { source: number; alto: number; titulo: string; texto: string }) {
+function Foto({ source, alto, titulo, texto }: { source: number | null; alto: number; titulo: string; texto: string }) {
   return (
     <View style={[styles.foto, { height: alto }]}>
-      <Image source={source} style={StyleSheet.absoluteFill} contentFit="cover" />
+      {source ? (
+        <Image source={source} style={StyleSheet.absoluteFill} contentFit="cover" />
+      ) : (
+        <LinearGradient colors={[colors.celeste, '#1C7FC0', colors.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      )}
       <LinearGradient colors={['rgba(7,42,79,0)', 'rgba(7,42,79,0.88)']} locations={[0.35, 1]} style={StyleSheet.absoluteFill} />
       <View style={styles.fotoText}>
         <Text style={styles.fotoTitulo}>{titulo}</Text>
@@ -94,14 +99,8 @@ export default function BienvenidaScreen({ navigation, route }: ScreenProps<'Bie
         <View style={styles.banners}>
           <Foto source={fotos.rugby} alto={alto} titulo="Rugby" texto="Infantiles, juveniles y plantel superior" />
           <Foto source={fotos.hockey} alto={alto} titulo="Hockey" texto="Para todas las edades" />
-          <LinearGradient colors={[colors.celeste, '#1C7FC0', colors.navy]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.inclusivo}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>RUGBY INCLUSIVO DEL SUR</Text>
-            </View>
-            <Text style={styles.inclusivoTitulo}>Juegan todos</Text>
-            <Text style={styles.inclusivoText}>Nuestro equipo, con cancha, camiseta y lugar para cada uno.</Text>
-            <Text style={styles.inclusivoEmoji}>🤝</Text>
-          </LinearGradient>
+          {/* Del Sur Rugby Inclusivo es del club (Pumpas XV no). */}
+          <Foto source={fotos.inclusivo} alto={alto} titulo="Rugby inclusivo" texto="Juegan todos: con cancha, camiseta y lugar para cada uno" />
           <Foto source={fotos.cancha} alto={alto} titulo="Vení a disfrutar el club" texto="Camino de Cintura 9399 · 9 de Abril · Parque Indoamericano" />
         </View>
 
@@ -141,12 +140,6 @@ const styles = StyleSheet.create({
   fotoText: { padding: 16 },
   fotoTitulo: { ...display(34), color: colors.white },
   fotoSub: { fontFamily: fonts.medium, fontSize: 13.5, color: 'rgba(255,255,255,0.88)', marginTop: 2 },
-  inclusivo: { borderRadius: radius.lg, padding: 20, overflow: 'hidden' },
-  badge: { alignSelf: 'flex-start', backgroundColor: colors.yellow, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
-  badgeText: { fontFamily: fonts.black, fontSize: 11, letterSpacing: 1.2, color: colors.navyInk },
-  inclusivoTitulo: { ...display(44), color: colors.white, marginTop: 10 },
-  inclusivoText: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 22, color: 'rgba(255,255,255,0.92)', marginTop: 4, maxWidth: '85%' },
-  inclusivoEmoji: { position: 'absolute', right: 16, top: 14, fontSize: 36 },
   social: { marginTop: 36, gap: 12 },
   somos: { ...display(40), color: colors.yellow },
   socialText: { fontFamily: fonts.medium, fontSize: 16, lineHeight: 24, color: 'rgba(255,255,255,0.88)', marginBottom: 6 },

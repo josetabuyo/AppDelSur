@@ -49,7 +49,7 @@ describe('Bienvenida (con sesión, fuera del padrón)', () => {
     await wrap(<BienvenidaScreen navigation={navigation} route={{ key: 'b', name: 'Bienvenida' } as never} />);
     expect(screen.getByText(/Hola José/)).toBeTruthy();
     expect(screen.queryByText(/Pumpas/)).toBeNull();
-    expect(screen.getByText('RUGBY INCLUSIVO DEL SUR')).toBeTruthy();
+    expect(screen.getByText('Rugby inclusivo')).toBeTruthy();
     // Ya cargó a Juan: arriba están sus jugadores para editar y "Agregar otro jugador".
     expect(screen.queryByTestId('soy-jugador')).toBeNull();
     await fireEvent.press(screen.getByTestId('editar-r1'));
