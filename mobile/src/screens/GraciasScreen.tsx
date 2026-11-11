@@ -51,12 +51,7 @@ export default function GraciasScreen({ navigation, route }: ScreenProps<'Gracia
           </View>
 
           <View style={styles.actions}>
-            <Button
-              testID="otro-hijo"
-              label={hijo ? 'Cargar otro hijo/a' : 'Cargar a mi hijo/a'}
-              onPress={() => navigation.replace('Ficha', { cargaPara: 'hijo' })}
-            />
-            <Button testID="sumar-companero" label="Sumar a un compañero/a" variant="light" onPress={() => navigation.replace('Ficha', { cargaPara: 'companero' })} />
+            <Button testID="agregar-otro" label="Agregar otro jugador" onPress={() => navigation.replace('Ficha', { cargaPara: 'companero' })} />
             <Button testID="compartir" label="Compartir con otro del club" variant="light" onPress={compartir} />
             <Button label="Listo" variant="ghost" onPress={() => navigation.popToTop()} />
           </View>

@@ -10,7 +10,6 @@ import EnrolamientoScreen from '../screens/EnrolamientoScreen';
 import GraciasScreen from '../screens/GraciasScreen';
 import InicioScreen from '../screens/InicioScreen';
 import PadronScreen from '../screens/PadronScreen';
-import SosJugadorScreen from '../screens/SosJugadorScreen';
 import { useSession } from '../state/session';
 import { colors } from '../theme';
 import type { RootStackParamList } from './types';
@@ -65,7 +64,6 @@ export default function RootNavigator() {
             {padron.length === 1 ? <Stack.Screen name="Ficha" component={FichaScreen} initialParams={{ persona: padron[0] }} /> : null}
             {padron.length > 1 ? <Stack.Screen name="Padron" component={PadronScreen} /> : null}
             <Stack.Screen name="Bienvenida" component={BienvenidaScreen} />
-            <Stack.Screen name="SosJugador" component={SosJugadorScreen} />
             {padron.length === 1 ? null : <Stack.Screen name="Ficha" component={FichaScreen} />}
             <Stack.Screen name="Enrolamiento" component={EnrolamientoScreen} />
             <Stack.Screen name="Gracias" component={GraciasScreen} options={{ animation: 'fade', gestureEnabled: false }} />

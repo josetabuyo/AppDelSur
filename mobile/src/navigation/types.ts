@@ -6,9 +6,9 @@ export type RootStackParamList = {
   Inicio: undefined;
   Padron: undefined;
   /** Del padrón (persona), corrigiendo una ficha ya enviada (registro) o cargando a alguien nuevo (cargaPara). */
-  Ficha: { persona?: PadronPersona; registro?: Registro; cargaPara?: CargaPara };
+  /** `volver`: al guardar vuelve a la pantalla anterior (se abrió con "Agregar otro jugador"). */
+  Ficha: { persona?: PadronPersona; registro?: Registro; cargaPara?: CargaPara; volver?: boolean };
   Bienvenida: undefined;
-  SosJugador: undefined;
   Enrolamiento: undefined;
   Gracias: { nombre: string; tipo: 'jugador' | 'comunidad'; cargaPara: CargaPara };
 };

@@ -135,3 +135,11 @@ evento, me lo recomendó un socio → ¿quién?, otro → texto libre) para medi
 jueguen?** (sí → edad y deporte) para prospectos. DNI, domicilio, "¿estás contento?" y "¿conocés a alguien
 que dejó?" salen de la encuesta (DNI va en la ficha de inscripción). Columnas nuevas en `registros`:
 `como_conocio`, `referido_por`, `como_conocio_detalle`, `hermanos_prospecto`, `hermanos_detalle`, `adulto_nombre` (migración 0002).
+
+## Entrada según el padrón y "Agregar otro jugador" (2026-11-11)
+
+- **Mail del padrón con un solo jugador** → directo a su ficha precargada (lo del padrón + lo ya guardado).
+- **Mail con varios jugadores** (40 de 392 mails, hasta 4 por mail, casi siempre hermanos) → lista mínima "¿De quién son los datos?".
+- **Fuera del padrón** → pantalla institucional: arriba "Soy jugador" (directo a la ficha); banners de lo deportivo a lo social (rugby, hockey, Rugby Inclusivo Del Sur, el club); abajo "Quiero ser parte del club" (familia, socios, ex jugadores, amigos). Se eliminó la pantalla intermedia "¿Sos jugador?".
+- **"Agregar otro jugador"** al pie de la ficha, de la lista y del agradecimiento: ficha vacía con el mail de quien carga, editable por el propio si lo tiene. Al guardar vuelve a donde estaba. Cubre al padre o al manager que carga a alguien sin mail (hay 7 jugadores sin mail en el padrón). El rol de manager queda para la v2.
+- Ficha de a partes: se guarda con nombre y apellido, se reabre con lo guardado y "Guardar" corrige la misma ficha (por socio o por id).

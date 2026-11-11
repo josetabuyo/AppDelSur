@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button } from '../components/Button';
 import { CuentaFooter } from '../components/CuentaFooter';
 import { Crest } from '../components/Crest';
 import type { ScreenProps } from '../navigation/types';
@@ -13,7 +14,9 @@ import { colors, display, fonts, radius } from '../theme';
  */
 export default function PadronScreen({ navigation }: ScreenProps<'Padron'>) {
   const insets = useSafeAreaInsets();
-  const { padron } = useSession();
+  const { padron, registros } = useSession();
+  // Los que agregó a mano (no están en el padrón con su mail), para poder reabrirlos.
+  const agregados = registros.filter((r) => r.tipo === 'jugador' && !r.socio);
   const faltan = padron.filter((p) => !p.cargado).length;
 
   return (
@@ -42,6 +45,22 @@ export default function PadronScreen({ navigation }: ScreenProps<'Padron'>) {
             {p.cargado ? <Text style={styles.done}>✓ Listo</Text> : <Text style={styles.go}>›</Text>}
           </Pressable>
         ))}
+
+        {agregados.map((r) => (
+          <Pressable key={r.id} testID={`editar-${r.id}`} accessibilityRole="button" onPress={() => navigation.navigate('Ficha', { registro: r })} style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.name}>
+                {r.nombre} {r.apellido}
+              </Text>
+              {r.division ? <Text style={styles.desc}>{r.division}</Text> : null}
+            </View>
+            <Text style={styles.done}>✓ Listo</Text>
+          </Pressable>
+        ))}
+
+        <View style={styles.otro}>
+          <Button testID="agregar-otro" label="Agregar otro jugador" variant="outline" onPress={() => navigation.navigate('Ficha', { cargaPara: 'companero', volver: true })} />
+        </View>
 
         <View style={styles.footer}>
           <CuentaFooter />
@@ -73,5 +92,6 @@ const styles = StyleSheet.create({
   desc: { fontFamily: fonts.medium, fontSize: 13, color: colors.textMuted, marginTop: 2 },
   done: { fontFamily: fonts.bold, fontSize: 13.5, color: colors.success },
   go: { fontSize: 28, lineHeight: 30, color: colors.celeste },
+  otro: { marginTop: 8 },
   footer: { marginTop: 'auto', paddingTop: 32, gap: 8 },
 });

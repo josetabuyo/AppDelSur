@@ -60,12 +60,12 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
 
   const [form, setForm] = useState<JugadorForm>(() => {
     const yo = splitName(user?.name);
-    const email = companero ? '' : (user?.email ?? '');
+    const email = user?.email ?? ''; // otro jugador sin mail propio: queda el de quien lo carga
     const adultoNombre = hijo ? (user?.name ?? '') : '';
     const antes = previo ? formDeRegistro(previo) : {};
     if (persona) return emptyJugador({ ...prefillDePadron(persona), email, adultoNombre, ...antes });
     if (hijo) return emptyJugador({ apellido: yo.apellido, email, adultoNombre, ...antes });
-    return emptyJugador(companero ? { ...antes } : { ...yo, email, ...antes });
+    return emptyJugador(companero ? { email, ...antes } : { ...yo, email, ...antes });
   });
   const [editarIdentidad, setEditarIdentidad] = useState(() => !(persona ? identidadCompleta(persona) : previo));
   const [errors, setErrors] = useState<Errors>({});
@@ -111,7 +111,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
       addRegistro(res.registro);
       await clearBorrador(borrador);
       const quedan = !!persona && padron.some((p) => !p.cargado && p.socio !== persona.socio);
-      if (quedan && navigation.canGoBack()) navigation.goBack();
+      if ((route.params.volver || quedan) && navigation.canGoBack()) navigation.goBack();
       else navigation.replace('Gracias', { nombre: form.nombre.trim(), tipo: 'jugador', cargaPara });
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
@@ -135,7 +135,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
     : hijo
       ? 'Datos de tu hijo/a'
       : companero
-        ? 'Tu compañero/a'
+        ? 'Otro jugador'
         : 'Contanos de vos';
 
   return (
@@ -202,7 +202,16 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
           {hijo ? <TextField label="Tu nombre (mamá, papá o tutor/a)" value={form.adultoNombre} onChangeText={(v) => set('adultoNombre', v)} autoCapitalize="words" /> : null}
           <TextField label={t.whatsapp} optional value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
           {companero ? (
-            <TextField label="Su mail" optional value={form.email} onChangeText={(v) => set('email', v)} error={errors.email} keyboardType="email-address" autoCapitalize="none" placeholder="Para que también pueda entrar" />
+            <TextField
+              label="Su mail"
+              hint="Si tiene mail propio, cambialo. Si no, queda el tuyo."
+              optional
+              value={form.email}
+              onChangeText={(v) => set('email', v)}
+              error={errors.email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
           ) : null}
 
           <SectionLabel>{t.conocio}</SectionLabel>
@@ -226,6 +235,10 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
           {form.hermanos ? (
             <TextField label="¿Qué edad tienen y qué deporte les interesa?" value={form.hermanosDetalle} onChangeText={(v) => set('hermanosDetalle', v)} placeholder="Ej: Sofi, 9, hockey" />
           ) : null}
+
+          <View style={styles.otro}>
+            <Button testID="agregar-otro" label="Agregar otro jugador" variant="outline" onPress={() => navigation.push('Ficha', { cargaPara: 'companero', volver: true })} />
+          </View>
         </View>
       </ScrollView>
 
@@ -245,6 +258,7 @@ const styles = StyleSheet.create({
   inner: { width: '100%', maxWidth: 520 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   back: { fontSize: 34, lineHeight: 36, color: colors.navy, paddingRight: 12 },
+  otro: { marginTop: 18 },
   salir: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textMuted, textDecorationLine: 'underline' },
   title: { ...display(36), color: colors.navy },
   sub: { fontFamily: fonts.medium, fontSize: 15, color: colors.textMuted, marginTop: 4, marginBottom: 22 },

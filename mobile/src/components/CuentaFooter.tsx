@@ -5,7 +5,9 @@ import { useSession } from '../state/session';
 import { colors, fonts, radius } from '../theme';
 
 /** "Entraste como … · Salir" y "Borrar mi cuenta" (Play exige poder borrarla desde la app). */
-export function CuentaFooter() {
+/** `oscuro`: sobre fondo azul (la pantalla institucional). */
+export function CuentaFooter({ oscuro }: { oscuro?: boolean } = {}) {
+  const muted = oscuro ? { color: 'rgba(255,255,255,0.7)' } : null;
   const { user, registros, logout, borrarCuenta } = useSession();
   const [borrar, setBorrar] = useState<'cerrado' | 'confirmar' | 'borrando'>('cerrado');
   const [borrarError, setBorrarError] = useState<string | null>(null);
@@ -13,14 +15,14 @@ export function CuentaFooter() {
   return (
     <>
         <Pressable onPress={logout} style={styles.logout} accessibilityRole="button">
-          <Text style={styles.logoutText}>
+          <Text style={[styles.logoutText, muted]}>
             {user?.email ? `Entraste como ${user.email} · ` : ''}
             <Text style={{ textDecorationLine: 'underline' }}>Salir</Text>
           </Text>
         </Pressable>
         {borrar === 'cerrado' ? (
           <Pressable testID="borrar-cuenta" onPress={() => setBorrar('confirmar')} style={styles.borrarLink} accessibilityRole="button">
-            <Text style={styles.borrarLinkText}>Borrar mi cuenta</Text>
+            <Text style={[styles.borrarLinkText, muted]}>Borrar mi cuenta</Text>
           </Pressable>
         ) : (
           <View style={styles.borrarBox}>

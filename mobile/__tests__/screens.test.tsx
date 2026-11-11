@@ -5,7 +5,6 @@ import BienvenidaScreen from '../src/screens/BienvenidaScreen';
 import FichaScreen from '../src/screens/FichaScreen';
 import InicioScreen from '../src/screens/InicioScreen';
 import PadronScreen from '../src/screens/PadronScreen';
-import SosJugadorScreen from '../src/screens/SosJugadorScreen';
 
 const mockLoginGoogle = jest.fn(async () => {});
 const mockBorrarCuenta = jest.fn(async () => {});
@@ -27,7 +26,7 @@ const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top:
 const wrap = (ui: React.ReactElement) => render(<SafeAreaProvider initialMetrics={metrics}>{ui}</SafeAreaProvider>);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const nav = () => ({ navigate: jest.fn(), goBack: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => true), addListener: jest.fn(() => () => {}) }) as any;
+const nav = () => ({ navigate: jest.fn(), push: jest.fn(), goBack: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => true), addListener: jest.fn(() => () => {}) }) as any;
 
 describe('Inicio (sin sesión)', () => {
   it('es mínima: escudo y entrar con Google, sin textos ni cuentas de prueba', async () => {
@@ -44,18 +43,46 @@ describe('Inicio (sin sesión)', () => {
 });
 
 describe('Bienvenida (con sesión, fuera del padrón)', () => {
-  it('presenta el club con el rugby inclusivo y "Seguir" va a ¿sos jugador?', async () => {
+  it('arriba "Soy jugador" va directo a la ficha; abajo lo social; Rugby Inclusivo Del Sur y nada de Pumpas', async () => {
     mockSession = { status: 'authed', padron: [] };
     const navigation = nav();
     await wrap(<BienvenidaScreen navigation={navigation} route={{ key: 'b', name: 'Bienvenida' } as never} />);
-    expect(screen.getByText('Viví el')).toBeTruthy();
-    expect(screen.getByTestId('salir')).toBeTruthy();
-    expect(screen.queryByText(/Pumpas/)).toBeNull();
-    expect(screen.getByText('RUGBY INCLUSIVO')).toBeTruthy();
     expect(screen.getByText(/Hola José/)).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('cta-seguir'));
-    expect(navigation.navigate).toHaveBeenCalledWith('SosJugador');
+    expect(screen.queryByText(/Pumpas/)).toBeNull();
+    expect(screen.getByText('RUGBY INCLUSIVO DEL SUR')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('soy-jugador'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'yo' });
+    await fireEvent.press(screen.getByTestId('otro-jugador'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero' });
+    await fireEvent.press(screen.getByTestId('editar-r1'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { registro: expect.objectContaining({ id: 'r1' }) });
+    await fireEvent.press(screen.getByTestId('ser-parte'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Enrolamiento');
     mockSession = { status: 'anon', padron: [] };
+  });
+
+  it('borrar la cuenta pide confirmación y se puede cancelar', async () => {
+    mockBorrarCuenta.mockClear();
+    await wrap(<BienvenidaScreen navigation={nav()} route={{ key: 'b', name: 'Bienvenida' } as never} />);
+    await fireEvent.press(screen.getByTestId('borrar-cuenta'));
+    expect(screen.getByText('¿Borrar tu cuenta?')).toBeTruthy();
+    expect(screen.getByText(/también los datos de tus hijos/)).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('borrar-cancelar'));
+    expect(screen.queryByText('¿Borrar tu cuenta?')).toBeNull();
+    expect(mockBorrarCuenta).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('borrar-cuenta'));
+    await fireEvent.press(screen.getByTestId('borrar-confirmar'));
+    expect(mockBorrarCuenta).toHaveBeenCalledTimes(1);
+  });
+
+  it('si falla el borrado lo dice y deja reintentar', async () => {
+    mockBorrarCuenta.mockClear();
+    mockBorrarCuenta.mockRejectedValueOnce(new Error('500'));
+    await wrap(<BienvenidaScreen navigation={nav()} route={{ key: 'b', name: 'Bienvenida' } as never} />);
+    await fireEvent.press(screen.getByTestId('borrar-cuenta'));
+    await fireEvent.press(screen.getByTestId('borrar-confirmar'));
+    expect(screen.getByText('No pudimos borrar la cuenta. Probá de nuevo.')).toBeTruthy();
+    expect(screen.getByTestId('borrar-confirmar')).toBeTruthy();
   });
 });
 
@@ -69,8 +96,11 @@ describe('Padrón (lista blanca)', () => {
     await wrap(<PadronScreen navigation={navigation} route={{ key: 'p', name: 'Padron' } as never} />);
     expect(screen.getByText('¿De quién son los datos?')).toBeTruthy();
     expect(screen.getByText('M-14')).toBeTruthy();
-    expect(screen.getByText('✓ Listo')).toBeTruthy();
-    expect(screen.queryByTestId('sumar-companero')).toBeNull();
+    expect(screen.getAllByText('✓ Listo')).toHaveLength(2); // José (padrón) y Juan (agregado a mano)
+    await fireEvent.press(screen.getByTestId('editar-r1'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { registro: expect.objectContaining({ id: 'r1' }) });
+    await fireEvent.press(screen.getByTestId('agregar-otro'));
+    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero', volver: true });
     await fireEvent.press(screen.getByTestId('socio-2-0'));
     expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { persona: tomas });
     await fireEvent.press(screen.getByTestId('socio-1-0'));
@@ -131,60 +161,16 @@ describe('Ficha (una sola pantalla, campos de Joel)', () => {
     mockSession = { status: 'anon', padron: [] };
   });
 
-  it('un compañero arranca vacío y pide su mail', async () => {
+  it('otro jugador arranca vacío, con el mail de quien carga (se puede cambiar), y vuelve al guardar', async () => {
     mockSession = { status: 'authed', padron: [] };
-    await wrap(<FichaScreen navigation={nav()} route={{ key: 'f', name: 'Ficha', params: { cargaPara: 'companero' } } as never} />);
-    expect(screen.getByText('Tu compañero/a')).toBeTruthy();
-    expect(screen.queryByDisplayValue('José')).toBeNull();
-    expect(screen.getByLabelText('Su mail')).toBeTruthy();
-    mockSession = { status: 'anon', padron: [] };
-  });
-});
-
-describe('¿Sos jugador?', () => {
-  it('borrar la cuenta pide confirmación y se puede cancelar', async () => {
-    mockBorrarCuenta.mockClear();
-    await wrap(<SosJugadorScreen navigation={nav()} route={{ key: 's', name: 'SosJugador' } as never} />);
-    await fireEvent.press(screen.getByTestId('borrar-cuenta'));
-    expect(screen.getByText('¿Borrar tu cuenta?')).toBeTruthy();
-    expect(screen.getByText(/también los datos de tus hijos/)).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('borrar-cancelar'));
-    expect(screen.queryByText('¿Borrar tu cuenta?')).toBeNull();
-    expect(mockBorrarCuenta).not.toHaveBeenCalled();
-
-    await fireEvent.press(screen.getByTestId('borrar-cuenta'));
-    await fireEvent.press(screen.getByTestId('borrar-confirmar'));
-    expect(mockBorrarCuenta).toHaveBeenCalledTimes(1);
-  });
-
-  it('si falla el borrado lo dice y deja reintentar', async () => {
-    mockBorrarCuenta.mockClear();
-    mockBorrarCuenta.mockRejectedValueOnce(new Error('500'));
-    await wrap(<SosJugadorScreen navigation={nav()} route={{ key: 's', name: 'SosJugador' } as never} />);
-    await fireEvent.press(screen.getByTestId('borrar-cuenta'));
-    await fireEvent.press(screen.getByTestId('borrar-confirmar'));
-    expect(screen.getByText('No pudimos borrar la cuenta. Probá de nuevo.')).toBeTruthy();
-    expect(screen.getByTestId('borrar-confirmar')).toBeTruthy();
-  });
-
-  it('ofrece las opciones (también sumar a un compañero) y navega con cargaPara', async () => {
     const navigation = nav();
-    await wrap(<SosJugadorScreen navigation={navigation} route={{ key: 's', name: 'SosJugador' } as never} />);
-    expect(screen.getByText('Sí, juego')).toBeTruthy();
-    expect(screen.getByText('Cargo los datos de mi hijo/a')).toBeTruthy();
-    expect(screen.getByText('No juego, soy parte de la comunidad')).toBeTruthy();
-    expect(screen.getByText(/Hola José/)).toBeTruthy();
-    expect(screen.getByText('Juan Tabuyo')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('editar-r1'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { registro: expect.objectContaining({ id: 'r1' }) });
-
-    await fireEvent.press(screen.getByTestId('opcion-yo'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'yo' });
-    await fireEvent.press(screen.getByTestId('opcion-companero'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'companero' });
-    await fireEvent.press(screen.getByTestId('opcion-hijo'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Ficha', { cargaPara: 'hijo' });
-    await fireEvent.press(screen.getByTestId('opcion-comunidad'));
-    expect(navigation.navigate).toHaveBeenLastCalledWith('Enrolamiento');
+    await wrap(<FichaScreen navigation={navigation} route={{ key: 'f', name: 'Ficha', params: { cargaPara: 'companero', volver: true } } as never} />);
+    expect(screen.getByText('Otro jugador')).toBeTruthy();
+    expect(screen.queryByDisplayValue('José')).toBeNull();
+    expect(screen.getByDisplayValue('jose@gmail.com')).toBeTruthy();
+    expect(screen.getByText(/Si no, queda el tuyo/)).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('agregar-otro'));
+    expect(navigation.push).toHaveBeenCalledWith('Ficha', { cargaPara: 'companero', volver: true });
+    mockSession = { status: 'anon', padron: [] };
   });
 });
