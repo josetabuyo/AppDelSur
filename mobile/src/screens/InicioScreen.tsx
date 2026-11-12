@@ -14,7 +14,8 @@ import { colors, fonts } from '../theme';
 const PRUEBAS = [
   { testID: 'login-dev-jugador', label: 'Prueba: jugador en la lista', email: 'jugador@delsur.dev', name: 'Nicolás Paz' },
   { testID: 'login-dev-socio', label: 'Prueba: familia en la lista', email: 'socio@delsur.dev', name: 'Lucía Ferreyra' },
-  { testID: 'login-dev-nuevo', label: 'Prueba: mail fuera de la lista', email: 'nuevo@delsur.dev', name: 'Martín Ríos' },
+  // Cada entrada es un usuario nuevo: cada uno que prueba la demo arranca de cero.
+  { testID: 'login-dev-nuevo', label: 'Prueba: mail fuera de la lista', email: 'nuevo@delsur.dev', name: 'Martín Ríos', unico: true },
 ];
 
 function GoogleG() {
@@ -50,13 +51,14 @@ export default function InicioScreen(_: ScreenProps<'Inicio'>) {
     <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 32 }]}>
       <View style={styles.center}>
         <Crest size={150} />
+        {DEV_LOGIN ? <Text style={styles.demo}>DEMO · usuarios de prueba</Text> : null}
       </View>
       <View style={styles.bottom}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button testID="cta-entrar" label="Entrar con Google" variant="light" icon={<GoogleG />} loading={busy} disabled={busy} onPress={() => run(loginGoogle)} />
         {DEV_LOGIN
           ? PRUEBAS.map((p) => (
-              <Pressable key={p.testID} testID={p.testID} disabled={busy} onPress={() => run(() => loginDev(p.email, p.name))} accessibilityRole="button">
+              <Pressable key={p.testID} testID={p.testID} disabled={busy} onPress={() => run(() => loginDev(p.unico ? `nuevo-${Date.now().toString(36)}@delsur.dev` : p.email, p.name))} accessibilityRole="button">
                 <Text style={styles.dev}>{p.label}</Text>
               </Pressable>
             ))
@@ -73,5 +75,6 @@ const styles = StyleSheet.create({
   gWrap: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#DADCE0' },
   g: { fontFamily: fonts.black, fontSize: 15, color: '#4285F4' },
   error: { fontFamily: fonts.medium, fontSize: 13, color: colors.yellow, textAlign: 'center' },
+  demo: { fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1.5, color: colors.yellow, marginTop: 18 },
   dev: { fontFamily: fonts.semibold, fontSize: 13, color: 'rgba(255,255,255,0.7)', textAlign: 'center', textDecorationLine: 'underline' },
 });

@@ -15,7 +15,16 @@ export async function upsertUser(p: { email: string; name?: string | null; image
   return u;
 }
 
-export const devLoginEnabled = () => !process.env.VERCEL && process.env.NODE_ENV !== "production";
+/** Dominio de los usuarios falsos de la demo. Se borran con scripts/borrar-demo.ts antes de salir en serio. */
+export const DEMO_DOMINIO = "@delsur.dev";
+
+/**
+ * Login sin Google ("elegir como quién entrar"). En la Mac, siempre. En la nube, solo con DEMO_LOGIN=1
+ * (APK demo) y solo para los usuarios falsos @delsur.dev: nadie puede entrar como un socio real.
+ */
+export const enLaMac = () => !process.env.VERCEL && process.env.NODE_ENV !== "production";
+export const devLoginEnabled = () => enLaMac() || process.env.DEMO_LOGIN === "1";
+export const devLoginPermitido = (email: string) => enLaMac() || email.trim().toLowerCase().endsWith(DEMO_DOMINIO);
 
 /** Borra la cuenta y todo lo que cargó (Play exige poder hacerlo desde la app y desde la web). */
 export async function deleteUserData(userId: string) {

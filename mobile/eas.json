@@ -12,6 +12,17 @@
         "EXPO_PUBLIC_DEV_LOGIN": "1"
       }
     },
+    "demo": {
+      "distribution": "internal",
+      "channel": "demo",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://appdelsur.vercel.app",
+        "EXPO_PUBLIC_DEV_LOGIN": "1"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "channel": "preview",

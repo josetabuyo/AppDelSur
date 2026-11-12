@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn, hasGoogle } from "../../../../auth";
 import { isAllowedRedirect } from "@/lib/redirect";
-import { devLoginEnabled } from "@/lib/users";
+import { enLaMac } from "@/lib/users";
 export const dynamic = "force-dynamic";
 
 export default async function Login({ searchParams }: { searchParams: Promise<{ redirect?: string }> }) {
@@ -16,7 +16,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   const target = `/mobile/callback?redirect=${encodeURIComponent(r)}`;
   if ((await auth())?.user?.email) redirect(target);
   // En producción (sin "entrar de prueba") no hay nada que elegir: directo a Google.
-  if (hasGoogle && !devLoginEnabled()) redirect(`/mobile/google?redirect=${encodeURIComponent(r)}`);
+  if (hasGoogle && !enLaMac()) redirect(`/mobile/google?redirect=${encodeURIComponent(r)}`);
 
   return (
     <main className="hero">
@@ -29,7 +29,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
             <button className="btn" type="submit">Entrar con Google</button>
           </form>
         ) : (<span className="tag">Google no configurado en este entorno</span>)}
-        {devLoginEnabled() && (
+        {enLaMac() && (
           <form className="card" style={{ padding: 0, boxShadow: "none" }} action={async (fd: FormData) => {
             "use server";
             try {
