@@ -143,3 +143,15 @@ que dejó?" salen de la encuesta (DNI va en la ficha de inscripción). Columnas 
 - **Fuera del padrón** → pantalla institucional: arriba "Soy jugador" (directo a la ficha); banners de lo deportivo a lo social (rugby, hockey, Rugby Inclusivo Del Sur, el club); abajo "Quiero ser parte del club" (familia, socios, ex jugadores, amigos). Se eliminó la pantalla intermedia "¿Sos jugador?".
 - **"Agregar otro jugador"** al pie de la ficha, de la lista y del agradecimiento: ficha vacía con el mail de quien carga, editable por el propio si lo tiene. Al guardar vuelve a donde estaba. Cubre al padre o al manager que carga a alguien sin mail (hay 7 jugadores sin mail en el padrón). El rol de manager queda para la v2.
 - Ficha de a partes: se guarda con nombre y apellido, se reabre con lo guardado y "Guardar" corrige la misma ficha (por socio o por id).
+
+## APK demo con usuarios falsos (2026-11-12)
+
+Mientras no estén las cuentas de Google Play (USD 25) y Apple (USD 99/año), se reparte un **APK demo** (perfil EAS `demo`, canal `demo`) con "elegí como quién entrar":
+- Usuarios **falsos** `@delsur.dev`: jugador en la lista, familia en la lista y "mail fuera de la lista" (este último crea un usuario nuevo en cada entrada).
+- Usa el backend y la base de producción. En la nube el login de prueba solo existe con `DEMO_LOGIN=1` y **solo acepta mails `@delsur.dev`**: nadie puede entrar como un socio real.
+- Los socios ficticios se cargan con `scripts/demo.ts cargar` (no toca el padrón real).
+
+**Antes de salir en serio** (build `production` con login de Google, Play/TestFlight):
+1. `npx tsx --env-file=<env de Neon> scripts/demo.ts borrar` → borra socios ficticios, fichas y usuarios `@delsur.dev`.
+2. `vercel env rm DEMO_LOGIN production` y volver a publicar.
+3. Construir con el perfil `production` (AAB, sin login de prueba).
