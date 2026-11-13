@@ -21,6 +21,20 @@ describe("buscarColegios", () => {
   });
 });
 
+describe("buscarColegios: alias de la zona", () => {
+  it("marista trae el MacNab Bernal de Villa Riachuelo, con el nombre que usa la gente", () => {
+    expect(buscarColegios("marista")[0]).toEqual({ nombre: "COLEGIO MARISTA MACNAB BERNAL", lugar: "CABA · Comuna 8" });
+    expect(buscarColegios("conser fe 5")[0].nombre).toBe("COLEGIO MARISTA MACNAB BERNAL");
+  });
+
+  it("safa trae los Sagrada Familia, primero los de la zona", () => {
+    const r = buscarColegios("safa");
+    expect(r.length).toBeGreaterThan(1);
+    expect(r.every((c) => /SAGRADA FAMILIA/.test(c.nombre))).toBe(true);
+    expect(r[0]).toEqual({ nombre: "INSTITUTO SAGRADA FAMILIA", lugar: "CABA · Comuna 8" });
+  });
+});
+
 describe("buscarLocalidades", () => {
   it("encuentra localidades del conurbano y barrios de CABA, primero las del club", () => {
     expect(buscarLocalidades("9 de abril")[0]).toEqual({ nombre: "9 de Abril", lugar: "Esteban Echeverría" });

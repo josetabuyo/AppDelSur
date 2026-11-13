@@ -1,5 +1,5 @@
-/** Buscador en memoria para listas cortas (colegios, localidades): "n" = nombre, "l" = lugar. */
-export type Item = { n: string; l: string };
+/** Buscador en memoria para listas cortas (colegios, localidades): "n" = nombre, "l" = lugar, "a" = alias (solo para buscar), "p" = va primero. */
+export type Item = { n: string; l: string; a?: string; p?: boolean };
 export type Opcion = { nombre: string; lugar: string };
 
 export const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[°º]/g, " ");
@@ -12,7 +12,7 @@ const cercania = (lugar: string) => (PARTIDO.test(lugar) ? 2 : CERCA.test(lugar)
 
 /** Cada palabra buscada tiene que ser el comienzo de una palabra del nombre o del lugar ("5" no trae "85"). */
 export function buscador(items: Item[]) {
-  const indice = items.map((c) => ({ c, palabras: palabrasDe(`${c.n} ${c.l}`), cerca: cercania(norm(c.l)) }));
+  const indice = items.map((c) => ({ c, palabras: palabrasDe(`${c.n} ${c.a ?? ""} ${c.l}`), cerca: cercania(norm(c.l)) + (c.p ? 3 : 0) }));
   return (q: string, max = 12): Opcion[] => {
     const buscadas = palabrasDe(q);
     if (!buscadas.length || buscadas.join("").length < 2) return [];
