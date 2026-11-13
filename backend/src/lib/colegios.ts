@@ -18,6 +18,12 @@ const ALIAS: { oficial: RegExp; lugar?: RegExp; nombre?: string; buscar: string;
   // "La SAFA": la de Lugano / Villa Riachuelo primero; las demás Sagrada Familia también salen.
   { oficial: /SAGRADA FAMILIA/, lugar: /Comuna 8$/, buscar: "safa lugano villa riachuelo", primero: true },
   { oficial: /SAGRADA FAMILIA/, buscar: "safa" },
+  // Con fuente (búsqueda web 2026-11-13): St. Mark's (Wikipedia), "el Bosque Azul" (micole), Inti-Huasi.
+  { oficial: /SAN MARCOS$/, lugar: /Esteban Echeverría$/, buscar: "st marks saint marks stmarks" },
+  { oficial: /SENDEROS AZULES/, buscar: "bosque azul" },
+  { oficial: /INTI HUASI/, buscar: "intihuasi" },
+  // El padrón dice "TÉCINO": que "técnico" lo encuentre igual.
+  { oficial: /T[EÉ]CINO DE MONTE GRANDE/, nombre: "INSTITUTO TÉCNICO DE MONTE GRANDE", buscar: "tecnico" },
 ];
 
 /** Cómo se tipean los tipos de escuela y las abreviaturas del padrón ("EP 93", "EES 5", "técnica 1", "instituto" ↔ "INST."). */

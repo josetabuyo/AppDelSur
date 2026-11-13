@@ -49,6 +49,15 @@ describe("buscarColegios: como se tipea", () => {
   });
 });
 
+describe("buscarColegios: apodos con fuente", () => {
+  it("st marks, bosque azul, intihuasi y el Técnico de Monte Grande (typo del padrón)", () => {
+    expect(buscarColegios("st marks")[0].nombre).toMatch(/SAN MARCOS$/);
+    expect(buscarColegios("bosque azul")[0].nombre).toBe("INSTITUTO SENDEROS AZULES");
+    expect(buscarColegios("intihuasi")[0].nombre).toBe("INSTITUTO EDUCACIONAL INTI HUASI");
+    expect(buscarColegios("tecnico monte grande")[0].nombre).toBe("INSTITUTO TÉCNICO DE MONTE GRANDE");
+  });
+});
+
 describe("buscarLocalidades", () => {
   it("encuentra localidades del conurbano y barrios de CABA, primero las del club", () => {
     expect(buscarLocalidades("9 de abril")[0]).toEqual({ nombre: "9 de Abril", lugar: "Esteban Echeverría" });
