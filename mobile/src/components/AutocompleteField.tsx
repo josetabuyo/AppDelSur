@@ -16,13 +16,14 @@ type Props = {
   optional?: boolean;
   highlight?: boolean;
   testID?: string;
+  error?: string;
 };
 
 /**
  * Campo que sugiere de una lista mientras se tipea (también al corregir algo ya cargado). Al elegir queda
  * escrito siempre igual, para poder contar y cruzar; "Otro" deja lo tipeado tal cual, si no está en la lista.
  */
-export function AutocompleteField({ label, value, onChange, buscar, hint, placeholder, optional, highlight, testID }: Props) {
+export function AutocompleteField({ label, value, onChange, buscar, hint, placeholder, optional, highlight, testID, error }: Props) {
   const [opciones, setOpciones] = useState<Opcion[]>([]);
   // Lo último tipeado acá. Si el valor es otro (se eligió de la lista, se confirmó con "Otro" o vino
   // precargado), está fijo, con "Cambiar" para corregirlo.
@@ -83,6 +84,7 @@ export function AutocompleteField({ label, value, onChange, buscar, hint, placeh
     <TextField
       highlight={highlight}
       optional={optional}
+      error={error}
       label={label}
       hint={hint}
       value={value}

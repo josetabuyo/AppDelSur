@@ -10,7 +10,7 @@ export function nombreColegio(s: string): string {
     .replace(/ (De|Del|La|Las|Los|Y|E|En) /g, (m) => m.toLowerCase());
 }
 
-type Props = { label: string; value: string; onChange: (v: string) => void };
+type Props = { label: string; value: string; onChange: (v: string) => void; error?: string };
 
 /** Colegio de la lista oficial: queda "Colegio Parish Robertson (Monte Grande · Esteban Echeverría)". */
 export function ColegioField({ label, value, onChange }: Props) {
@@ -29,11 +29,11 @@ export function ColegioField({ label, value, onChange }: Props) {
 }
 
 /** Localidad de la Provincia o barrio de CABA: queda "9 de Abril (Esteban Echeverría)" o "Villa Lugano (CABA)". */
-export function LocalidadField({ label, value, onChange }: Props) {
+export function LocalidadField({ label, value, onChange, error }: Props) {
   return (
     <AutocompleteField
       testID="localidad"
-      optional
+      error={error}
       label={label}
       value={value}
       onChange={onChange}

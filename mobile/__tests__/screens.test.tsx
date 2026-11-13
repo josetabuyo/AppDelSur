@@ -125,7 +125,7 @@ describe('Ficha (una sola pantalla, campos de Joel)', () => {
     expect(screen.getByText('04/03/2012 · M-14')).toBeTruthy();
     expect(screen.getByLabelText('¿A qué colegio va?')).toBeTruthy();
     expect(screen.getByDisplayValue('José Tabuyo')).toBeTruthy(); // adulto responsable, de la cuenta de Google
-    expect(screen.queryByLabelText('DNI')).toBeNull();
+    expect(screen.getByDisplayValue('45123456')).toBeTruthy(); // el DNI del padrón, a la vista (pedido de Joel)
     expect(screen.queryByLabelText(/Paso/)).toBeNull();
     await fireEvent.press(screen.getByTestId('editar-persona'));
     expect(screen.getByDisplayValue('04/03/2012')).toBeTruthy();
@@ -169,6 +169,11 @@ describe('Ficha (una sola pantalla, campos de Joel)', () => {
     expect(screen.queryByDisplayValue('José')).toBeNull();
     expect(screen.getByDisplayValue('jose@gmail.com')).toBeTruthy();
     expect(screen.getByText(/Si no, queda el tuyo/)).toBeTruthy();
+    // Barrio y WhatsApp son obligatorios: sin ellos no guarda y lo dice junto al botón.
+    await fireEvent.changeText(screen.getByLabelText('Nombre'), 'Pedro');
+    await fireEvent.changeText(screen.getByLabelText('Apellido'), 'Gómez');
+    await fireEvent.press(screen.getByTestId('listo'));
+    expect(screen.getByText(/Revisá el barrio, el WhatsApp/)).toBeTruthy();
     await fireEvent.press(screen.getByTestId('agregar-otro'));
     expect(navigation.push).toHaveBeenCalledWith('Ficha', { cargaPara: 'companero', volver: true });
     mockSession = { status: 'anon', padron: [] };

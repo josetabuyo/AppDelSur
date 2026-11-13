@@ -3,11 +3,11 @@ import { buildComunidadPayload, buildJugadorPayload, splitName } from '../src/li
 
 describe('validación de formularios', () => {
   it('solo nombre y apellido son obligatorios', () => {
-    expect(validateJugador(emptyJugador())).toEqual({ nombre: expect.any(String), apellido: expect.any(String) });
-    expect(validateJugador(emptyJugador({ nombre: 'Juan', apellido: 'Pérez' }))).toEqual({});
+    expect(validateJugador(emptyJugador())).toEqual({ nombre: expect.any(String), apellido: expect.any(String), localidad: expect.any(String), telefono: expect.any(String) });
+    expect(validateJugador(emptyJugador({ nombre: 'Juan', apellido: 'Pérez', localidad: 'Lugano', telefono: '+54 9 11 5555-6666' }))).toEqual({});
   });
   it('valida teléfono y mail si están cargados', () => {
-    expect(validateJugador(emptyJugador({ nombre: 'Juan', apellido: 'Pérez', email: 'mal', telefono: '123' }))).toEqual({ email: expect.any(String), telefono: expect.any(String) });
+    expect(validateJugador(emptyJugador({ nombre: 'Juan', apellido: 'Pérez', localidad: 'Lugano', email: 'mal', telefono: '123' }))).toEqual({ email: expect.any(String), telefono: expect.any(String) });
   });
   it('comunidad', () => {
     expect(Object.keys(validateComunidad(emptyComunidad()))).toEqual(['nombre', 'apellido']);

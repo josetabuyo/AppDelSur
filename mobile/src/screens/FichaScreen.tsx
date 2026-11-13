@@ -97,7 +97,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
   };
 
   // El aviso va junto al botón (no se sube la pantalla): cada campo marca su error en rojo.
-  const NOMBRES: Record<string, string> = { nombre: 'el nombre', apellido: 'el apellido', fechaNacimiento: 'la fecha', telefono: 'el WhatsApp', email: 'el mail' };
+  const NOMBRES: Record<string, string> = { nombre: 'el nombre', apellido: 'el apellido', fechaNacimiento: 'la fecha', dni: 'el DNI', localidad: 'el barrio', telefono: 'el WhatsApp', email: 'el mail' };
   const mostrarErrores = (e: Errors) => {
     setErrors(e);
     if (IDENTIDAD.some((k) => e[k as string])) setEditarIdentidad(true);
@@ -106,15 +106,13 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
   };
 
   const listo = async () => {
-    // El DNI no se muestra (viene del padrón): si vino mal, no lo mandamos en vez de trabar el guardado.
-    const { dni: dniMal, ...e } = validateJugador(form);
+    const e = validateJugador(form);
     if (Object.keys(e).length) return mostrarErrores(e);
-    const aEnviar = dniMal ? { ...form, dni: '' } : form;
     if (!token) return;
     setBanner(null);
     setSending(true);
     try {
-      const res = await api.crearRegistro(token, buildJugadorPayload(aEnviar, cargaPara, persona?.socio ?? previo?.socio, persona ? undefined : previo?.id));
+      const res = await api.crearRegistro(token, buildJugadorPayload(form, cargaPara, persona?.socio ?? previo?.socio, persona ? undefined : previo?.id));
       addRegistro(res.registro);
       await clearBorrador(borrador);
       const quedan = !!persona && padron.some((p) => !p.cargado && p.socio !== persona.socio);
@@ -193,6 +191,8 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
             </View>
           )}
 
+          <TextField label="DNI" optional value={form.dni} onChangeText={(v) => set('dni', v.replace(/[^\d.]/g, ''))} error={errors.dni} keyboardType="number-pad" placeholder="Sin puntos" maxLength={10} />
+
           <SectionLabel>{t.juega}</SectionLabel>
           <View style={styles.chips}>
             {DEPORTES.map((d) => (
@@ -201,10 +201,10 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
           </View>
 
           <ColegioField label={t.colegio} value={form.colegio} onChange={(v) => set('colegio', v)} />
-          <LocalidadField label={t.barrio} value={form.localidad} onChange={(v) => set('localidad', v)} />
+          <LocalidadField label={t.barrio} value={form.localidad} onChange={(v) => set('localidad', v)} error={errors.localidad} />
 
           {hijo ? <TextField label="Tu nombre (mamá, papá o tutor/a)" value={form.adultoNombre} onChangeText={(v) => set('adultoNombre', v)} autoCapitalize="words" /> : null}
-          <TextField label={t.whatsapp} optional value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
+          <TextField label={t.whatsapp} value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
           {companero ? (
             <TextField
               label="Su mail"

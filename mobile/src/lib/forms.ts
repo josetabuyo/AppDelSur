@@ -75,7 +75,9 @@ export function validateJugador(f: JugadorForm): Errors {
   if (!f.apellido.trim()) e.apellido = 'Contanos el apellido';
   if (!isValidDni(f.dni)) e.dni = 'El DNI tiene 7 u 8 números';
   if (f.fechaNacimiento.trim() && !parseDate(f.fechaNacimiento)) e.fechaNacimiento = 'Usá el formato DD/MM/AAAA';
-  if (!isValidPhone(f.telefono)) e.telefono = 'Revisá el teléfono (con código de área)';
+  if (!f.localidad.trim()) e.localidad = 'Contanos el barrio o la localidad';
+  if (!f.telefono.trim()) e.telefono = 'Dejanos un WhatsApp';
+  else if (!isValidPhone(f.telefono)) e.telefono = 'Revisá el teléfono (con código de área)';
   if (!isValidEmail(f.email)) e.email = 'Revisá el mail';
   return e;
 }
