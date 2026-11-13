@@ -2,12 +2,19 @@ import { emptyComunidad, emptyJugador, validateComunidad, validateJugador } from
 import { buildComunidadPayload, buildJugadorPayload, splitName } from '../src/lib/payload';
 
 describe('validación de formularios', () => {
-  it('solo nombre y apellido son obligatorios', () => {
-    expect(validateJugador(emptyJugador())).toEqual({ nombre: expect.any(String), apellido: expect.any(String), localidad: expect.any(String), telefono: expect.any(String) });
-    expect(validateJugador(emptyJugador({ nombre: 'Juan', apellido: 'Pérez', localidad: 'Lugano', telefono: '+54 9 11 5555-6666' }))).toEqual({});
+  const completo = { nombre: 'Juan', apellido: 'Pérez', dni: '45123456', fechaNacimiento: '04/03/2012', deporte: 'rugby' as const, colegio: 'Instituto Sagrada Familia', localidad: 'Lugano', telefono: '+54 9 11 5555-6666', email: 'juan@x.com', comoConocio: 'instagram' as const, hermanos: false };
+  it('todo es obligatorio', () => {
+    expect(Object.keys(validateJugador(emptyJugador())).sort()).toEqual(['apellido', 'colegio', 'comoConocio', 'deporte', 'dni', 'email', 'fechaNacimiento', 'hermanos', 'localidad', 'nombre', 'telefono']);
+    expect(validateJugador(emptyJugador(completo))).toEqual({});
   });
-  it('valida teléfono y mail si están cargados', () => {
-    expect(validateJugador(emptyJugador({ nombre: 'Juan', apellido: 'Pérez', localidad: 'Lugano', email: 'mal', telefono: '123' }))).toEqual({ email: expect.any(String), telefono: expect.any(String) });
+  it('el adulto, quién lo recomendó, cómo y los hermanos, cuando corresponden', () => {
+    expect(Object.keys(validateJugador(emptyJugador(completo), { adulto: true }))).toEqual(['adultoNombre']);
+    expect(Object.keys(validateJugador(emptyJugador({ ...completo, comoConocio: 'socio' })))).toEqual(['referidoPor']);
+    expect(Object.keys(validateJugador(emptyJugador({ ...completo, comoConocio: 'otro' })))).toEqual(['comoConocioDetalle']);
+    expect(Object.keys(validateJugador(emptyJugador({ ...completo, hermanos: true })))).toEqual(['hermanosDetalle']);
+  });
+  it('valida formato de DNI, fecha, teléfono y mail', () => {
+    expect(Object.keys(validateJugador(emptyJugador({ ...completo, dni: '12', fechaNacimiento: '31/02/2012', email: 'mal', telefono: '123' }))).sort()).toEqual(['dni', 'email', 'fechaNacimiento', 'telefono']);
   });
   it('comunidad', () => {
     expect(Object.keys(validateComunidad(emptyComunidad()))).toEqual(['nombre', 'apellido']);

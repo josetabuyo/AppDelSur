@@ -13,10 +13,11 @@ export function nombreColegio(s: string): string {
 type Props = { label: string; value: string; onChange: (v: string) => void; error?: string };
 
 /** Colegio de la lista oficial: queda "Colegio Parish Robertson (Monte Grande · Esteban Echeverría)". */
-export function ColegioField({ label, value, onChange }: Props) {
+export function ColegioField({ label, value, onChange, error }: Props) {
   return (
     <AutocompleteField
       testID="colegio"
+      error={error}
       highlight
       label={label}
       value={value}

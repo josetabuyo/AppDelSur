@@ -68,17 +68,28 @@ export const emptyComunidad = (prefill: Partial<ComunidadForm> = {}): ComunidadF
 
 export type Errors = Partial<Record<string, string>>;
 
-/** Solo nombre y apellido son obligatorios; el resto se valida si está cargado. */
-export function validateJugador(f: JugadorForm): Errors {
+/** Todo es obligatorio (pedido de Joel y Lucas, 2026-11-13). `adulto`: si carga a un hijo/a, su nombre también. */
+export function validateJugador(f: JugadorForm, { adulto = false }: { adulto?: boolean } = {}): Errors {
   const e: Errors = {};
   if (!f.nombre.trim()) e.nombre = 'Contanos el nombre';
   if (!f.apellido.trim()) e.apellido = 'Contanos el apellido';
-  if (!isValidDni(f.dni)) e.dni = 'El DNI tiene 7 u 8 números';
-  if (f.fechaNacimiento.trim() && !parseDate(f.fechaNacimiento)) e.fechaNacimiento = 'Usá el formato DD/MM/AAAA';
+  if (!f.dni.trim()) e.dni = 'Falta el DNI';
+  else if (!isValidDni(f.dni)) e.dni = 'El DNI tiene 7 u 8 números';
+  if (!f.fechaNacimiento.trim()) e.fechaNacimiento = 'Falta la fecha de nacimiento';
+  else if (!parseDate(f.fechaNacimiento)) e.fechaNacimiento = 'Usá el formato DD/MM/AAAA';
+  if (!f.deporte) e.deporte = 'Elegí qué juega';
+  if (!f.colegio.trim()) e.colegio = 'Contanos el colegio';
   if (!f.localidad.trim()) e.localidad = 'Contanos el barrio o la localidad';
+  if (adulto && !f.adultoNombre.trim()) e.adultoNombre = 'Contanos tu nombre';
   if (!f.telefono.trim()) e.telefono = 'Dejanos un WhatsApp';
   else if (!isValidPhone(f.telefono)) e.telefono = 'Revisá el teléfono (con código de área)';
-  if (!isValidEmail(f.email)) e.email = 'Revisá el mail';
+  if (!f.email.trim()) e.email = 'Falta el mail';
+  else if (!isValidEmail(f.email)) e.email = 'Revisá el mail';
+  if (!f.comoConocio) e.comoConocio = 'Contanos cómo llegó al club';
+  else if (f.comoConocio === 'socio' && !f.referidoPor.trim()) e.referidoPor = 'Contanos quién';
+  else if (f.comoConocio === 'otro' && !f.comoConocioDetalle.trim()) e.comoConocioDetalle = 'Contanos cómo';
+  if (f.hermanos === null) e.hermanos = 'Elegí sí o no';
+  else if (f.hermanos && !f.hermanosDetalle.trim()) e.hermanosDetalle = 'Contanos edad y deporte';
   return e;
 }
 

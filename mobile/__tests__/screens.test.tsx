@@ -169,11 +169,12 @@ describe('Ficha (una sola pantalla, campos de Joel)', () => {
     expect(screen.queryByDisplayValue('José')).toBeNull();
     expect(screen.getByDisplayValue('jose@gmail.com')).toBeTruthy();
     expect(screen.getByText(/Si no, queda el tuyo/)).toBeTruthy();
-    // Barrio y WhatsApp son obligatorios: sin ellos no guarda y lo dice junto al botón.
+    // Todo es obligatorio: sin los datos no guarda, lo dice junto al botón y marca cada campo.
     await fireEvent.changeText(screen.getByLabelText('Nombre'), 'Pedro');
     await fireEvent.changeText(screen.getByLabelText('Apellido'), 'Gómez');
     await fireEvent.press(screen.getByTestId('listo'));
-    expect(screen.getByText(/Revisá el barrio, el WhatsApp/)).toBeTruthy();
+    expect(screen.getByText(/Revisá .*el DNI.*el barrio.*el WhatsApp/)).toBeTruthy();
+    expect(screen.getByText('Elegí qué juega')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('agregar-otro'));
     expect(navigation.push).toHaveBeenCalledWith('Ficha', { cargaPara: 'companero', volver: true });
     mockSession = { status: 'anon', padron: [] };

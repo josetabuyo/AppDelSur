@@ -97,16 +97,16 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
   };
 
   // El aviso va junto al botón (no se sube la pantalla): cada campo marca su error en rojo.
-  const NOMBRES: Record<string, string> = { nombre: 'el nombre', apellido: 'el apellido', fechaNacimiento: 'la fecha', dni: 'el DNI', localidad: 'el barrio', telefono: 'el WhatsApp', email: 'el mail' };
+  const NOMBRES: Record<string, string> = { nombre: 'el nombre', apellido: 'el apellido', fechaNacimiento: 'la fecha', dni: 'el DNI', deporte: 'qué juega', colegio: 'el colegio', localidad: 'el barrio', adultoNombre: 'tu nombre', telefono: 'el WhatsApp', email: 'el mail', comoConocio: 'cómo conoció el club', referidoPor: 'quién lo recomendó', comoConocioDetalle: 'cómo conoció el club', hermanos: 'lo de hermanos', hermanosDetalle: 'lo de hermanos' };
   const mostrarErrores = (e: Errors) => {
     setErrors(e);
     if (IDENTIDAD.some((k) => e[k as string])) setEditarIdentidad(true);
-    const cuales = Object.keys(e).filter((k) => e[k]).map((k) => NOMBRES[k] ?? k);
+    const cuales = [...new Set(Object.keys(e).filter((k) => e[k]).map((k) => NOMBRES[k] ?? k))];
     setBanner(`Revisá ${cuales.join(', ')}.`);
   };
 
   const listo = async () => {
-    const e = validateJugador(form);
+    const e = validateJugador(form, { adulto: hijo });
     if (Object.keys(e).length) return mostrarErrores(e);
     if (!token) return;
     setBanner(null);
@@ -160,7 +160,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
           </View>
 
           <Text style={styles.title}>{titulo}</Text>
-          <Text style={styles.sub}>{previo ? 'Esto es lo que ya cargaste. Completá lo que falta.' : 'Completá lo que sepas; podés seguir otro día.'}</Text>
+          <Text style={styles.sub}>{previo ? 'Esto es lo que ya cargaste. Completá lo que falta.' : 'Completá todos los datos. Lo que vas cargando queda en el teléfono hasta que tocás Guardar.'}</Text>
 
           {editarIdentidad ? (
             <>
@@ -168,7 +168,6 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
               <TextField label="Apellido" value={form.apellido} onChangeText={(v) => set('apellido', v)} error={errors.apellido} autoCapitalize="words" />
               <TextField
                 label="Fecha de nacimiento"
-                optional
                 value={form.fechaNacimiento}
                 onChangeText={(v) => set('fechaNacimiento', maskDate(v))}
                 error={errors.fechaNacimiento}
@@ -191,7 +190,7 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
             </View>
           )}
 
-          <TextField label="DNI" optional value={form.dni} onChangeText={(v) => set('dni', v.replace(/[^\d.]/g, ''))} error={errors.dni} keyboardType="number-pad" placeholder="Sin puntos" maxLength={10} />
+          <TextField label="DNI" value={form.dni} onChangeText={(v) => set('dni', v.replace(/[^\d.]/g, ''))} error={errors.dni} keyboardType="number-pad" placeholder="Sin puntos" maxLength={10} />
 
           <SectionLabel>{t.juega}</SectionLabel>
           <View style={styles.chips}>
@@ -199,17 +198,17 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
               <Chip key={d.value} label={d.label} emoji={d.emoji} selected={form.deporte === d.value} onPress={() => set('deporte', form.deporte === d.value ? null : d.value)} />
             ))}
           </View>
+          {errors.deporte ? <Text style={styles.chipError}>{errors.deporte}</Text> : null}
 
-          <ColegioField label={t.colegio} value={form.colegio} onChange={(v) => set('colegio', v)} />
+          <ColegioField label={t.colegio} value={form.colegio} onChange={(v) => set('colegio', v)} error={errors.colegio} />
           <LocalidadField label={t.barrio} value={form.localidad} onChange={(v) => set('localidad', v)} error={errors.localidad} />
 
-          {hijo ? <TextField label="Tu nombre (mamá, papá o tutor/a)" value={form.adultoNombre} onChangeText={(v) => set('adultoNombre', v)} autoCapitalize="words" /> : null}
+          {hijo ? <TextField label="Tu nombre (mamá, papá o tutor/a)" value={form.adultoNombre} onChangeText={(v) => set('adultoNombre', v)} error={errors.adultoNombre} autoCapitalize="words" /> : null}
           <TextField label={t.whatsapp} value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
           {companero ? (
             <TextField
               label="Su mail"
               hint="Si tiene mail propio, cambialo. Si no, queda el tuyo."
-              optional
               value={form.email}
               onChangeText={(v) => set('email', v)}
               error={errors.email}
@@ -224,11 +223,12 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
               <Chip key={c.value} small label={c.label} selected={form.comoConocio === c.value} onPress={() => set('comoConocio', form.comoConocio === c.value ? null : c.value)} />
             ))}
           </View>
+          {errors.comoConocio ? <Text style={styles.chipError}>{errors.comoConocio}</Text> : null}
           {form.comoConocio === 'socio' ? (
-            <TextField label="¿Quién?" value={form.referidoPor} onChangeText={(v) => set('referidoPor', v)} placeholder="Nombre y apellido" autoCapitalize="words" />
+            <TextField label="¿Quién?" value={form.referidoPor} onChangeText={(v) => set('referidoPor', v)} error={errors.referidoPor} placeholder="Nombre y apellido" autoCapitalize="words" />
           ) : null}
           {form.comoConocio === 'otro' ? (
-            <TextField label="¿Cómo?" value={form.comoConocioDetalle} onChangeText={(v) => set('comoConocioDetalle', v)} placeholder="Contanos cómo llegaste al club" multiline />
+            <TextField label="¿Cómo?" value={form.comoConocioDetalle} onChangeText={(v) => set('comoConocioDetalle', v)} error={errors.comoConocioDetalle} placeholder="Contanos cómo llegaste al club" multiline />
           ) : null}
 
           <SectionLabel>{t.hermanos}</SectionLabel>
@@ -236,8 +236,9 @@ export default function FichaScreen({ navigation, route }: ScreenProps<'Ficha'>)
             <Chip label="Sí" selected={form.hermanos === true} onPress={() => set('hermanos', form.hermanos === true ? null : true)} />
             <Chip label="No" selected={form.hermanos === false} onPress={() => set('hermanos', form.hermanos === false ? null : false)} />
           </View>
+          {errors.hermanos ? <Text style={styles.chipError}>{errors.hermanos}</Text> : null}
           {form.hermanos ? (
-            <TextField label="¿Qué edad tienen y qué deporte les interesa?" value={form.hermanosDetalle} onChangeText={(v) => set('hermanosDetalle', v)} placeholder="Ej: Sofi, 9, hockey" />
+            <TextField label="¿Qué edad tienen y qué deporte les interesa?" value={form.hermanosDetalle} onChangeText={(v) => set('hermanosDetalle', v)} error={errors.hermanosDetalle} placeholder="Ej: Sofi, 9, hockey" />
           ) : null}
 
           {agregados.length ? (
@@ -284,6 +285,7 @@ const styles = StyleSheet.create({
   sub: { fontFamily: fonts.medium, fontSize: 15, color: colors.textMuted, marginTop: 4, marginBottom: 22 },
   banner: { fontFamily: fonts.semibold, color: colors.error, fontSize: 14, backgroundColor: '#FDECEE', borderRadius: radius.md, padding: 12, overflow: 'hidden', textAlign: 'center' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+  chipError: { fontFamily: fonts.semibold, fontSize: 13, color: colors.error, marginTop: -12, marginBottom: 16 },
   persona: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.celesteSoft, borderRadius: radius.md, padding: 14, marginBottom: 22 },
   personaName: { fontFamily: fonts.bold, fontSize: 16, color: colors.navy },
   personaData: { fontFamily: fonts.medium, fontSize: 13, color: colors.textMuted, marginTop: 2 },
