@@ -35,6 +35,20 @@ describe("buscarColegios: alias de la zona", () => {
   });
 });
 
+describe("buscarColegios: como se tipea", () => {
+  it("siglas de tipo de escuela: ep 93, ees 5, técnica, instituto ↔ INST.", () => {
+    expect(buscarColegios("ep 93").some((c) => /PRIMARIA Nº93/.test(c.nombre))).toBe(true);
+    expect(buscarColegios("ees 5")[1]).toEqual(expect.objectContaining({ lugar: "Monte Grande · Esteban Echeverría" }));
+    expect(buscarColegios("tecnica 1").length).toBeGreaterThan(0);
+    expect(buscarColegios("instituto obra conser fe")[0].nombre).toBe("COLEGIO MARISTA MACNAB BERNAL");
+  });
+
+  it("iniciales de los privados: isma / csma → San Martín de los Andes (Lugano)", () => {
+    expect(buscarColegios("isma")[0]).toEqual({ nombre: "COLEGIO SAN MARTIN DE LOS ANDES", lugar: "CABA · Comuna 8" });
+    expect(buscarColegios("csma")[0].nombre).toBe("COLEGIO SAN MARTIN DE LOS ANDES");
+  });
+});
+
 describe("buscarLocalidades", () => {
   it("encuentra localidades del conurbano y barrios de CABA, primero las del club", () => {
     expect(buscarLocalidades("9 de abril")[0]).toEqual({ nombre: "9 de Abril", lugar: "Esteban Echeverría" });

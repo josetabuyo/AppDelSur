@@ -20,9 +20,37 @@ const ALIAS: { oficial: RegExp; lugar?: RegExp; nombre?: string; buscar: string;
   { oficial: /SAGRADA FAMILIA/, buscar: "safa" },
 ];
 
+/** Cómo se tipean los tipos de escuela y las abreviaturas del padrón ("EP 93", "EES 5", "técnica 1", "instituto" ↔ "INST."). */
+const SIGLAS: [RegExp, string][] = [
+  [/ESCUELA DE EDUCACI[OÓ]N PRIMARIA|ESC\. PRIMARIA/, "ep primaria"],
+  [/ESCUELA DE EDUCACI[OÓ]N SECUNDARIA T[EÉ]CNICA|ESC\. TEC\.|ESCUELA T[EÉ]CNICA/, "eest est et tecnica industrial"],
+  [/ESCUELA DE EDUCACI[OÓ]N SECUNDARIA(?! T)/, "ees es secundaria media"],
+  [/ESC\. DE EDUC\. MEDIA/, "media secundaria"],
+  [/ESC\. DE COM\.|ESCUELA DE COMERCIO/, "comercial comercio"],
+  [/^ENS\b/, "normal escuela normal superior"],
+  [/^CFP\b/, "centro formacion profesional"],
+  [/\bINST\./, "instituto"],
+  [/\bCOLEG\./, "colegio"],
+  [/\bESC\./, "escuela"],
+  [/\bNTRA\./, "nuestra"],
+  [/\bSRA\./, "senora"],
+];
+
+const CONECTORES = new Set(["DE", "DEL", "LA", "LAS", "LOS", "EL", "Y", "E"]);
+
+/** Iniciales de los privados ("Colegio San Martín de los Andes" → csma, isma, sma), por si lo buscan por la sigla. */
+function iniciales(nombre: string): string {
+  const pal = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().split(/[^A-Z]+/).filter((w) => w && !CONECTORES.has(w));
+  if (!/^(COLEGIO|INSTITUTO|INST|COLEG|LICEO)$/.test(pal[0] ?? "")) return "";
+  const resto = pal.slice(1).map((w) => w[0]).join("");
+  if (resto.length < 2) return "";
+  return [`c${resto}`, `i${resto}`, resto.length >= 3 ? resto : ""].join(" ").toLowerCase();
+}
+
 function conAlias(c: { n: string; l: string }) {
   const a = ALIAS.find((x) => x.oficial.test(c.n) && (!x.lugar || x.lugar.test(c.l)));
-  return a ? { n: a.nombre ?? c.n, l: c.l, a: `${a.buscar} ${c.n}`, p: a.primero } : c;
+  const extra = [a ? `${a.buscar} ${c.n}` : "", ...SIGLAS.filter(([re]) => re.test(c.n)).map(([, s]) => s), iniciales(c.n)].filter(Boolean).join(" ");
+  return { n: a?.nombre ?? c.n, l: c.l, a: extra || undefined, p: a?.primero };
 }
 
 /** Localidades de la Provincia (Georef) y barrios de CABA. Se regenera con scripts/localidades_georef.py. */
