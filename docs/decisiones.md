@@ -155,3 +155,13 @@ Mientras no estén las cuentas de Google Play (USD 25) y Apple (USD 99/año), se
 1. `npx tsx --env-file=<env de Neon> scripts/demo.ts borrar` → borra socios ficticios, fichas y usuarios `@delsur.dev`.
 2. `vercel env rm DEMO_LOGIN production` y volver a publicar.
 3. Construir con el perfil `production` (AAB, sin login de prueba).
+
+## iPhone sin cuenta paga (2026-11-16)
+
+Mientras no se pague Apple Developer, la app se instala en el iPhone de José con su Apple ID gratis
+(Personal Team `HH948A433A`): `cd mobile && npm run ios:device` (demo: usuarios de prueba contra producción)
+o `npm run ios:device -- real` (Google). Release con el JS adentro: anda sin la Mac. Bundle propio
+`com.josetabuyo.appdelsur` para no gastar `ar.org.delsur.app`, que queda para la cuenta paga. La firma vence
+a los 7 días: se vuelve a correr el comando. Sirve solo para el teléfono de José; para que otros la
+instalen hace falta la cuenta paga (TestFlight o ad hoc por EAS). Receta tomada de LasMobile
+(`~/Development/las-mobile/scripts/ios-device.sh`), probada en esta Mac con Xcode 26.6 y CocoaPods 1.17.
