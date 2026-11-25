@@ -156,6 +156,8 @@ Mientras no estén las cuentas de Google Play (USD 25) y Apple (USD 99/año), se
 2. `vercel env rm DEMO_LOGIN production` y volver a publicar.
 3. Construir con el perfil `production` (AAB, sin login de prueba).
 
+**Hecho el 2026-11-25:** demo borrada en producción, `DEMO_LOGIN` fuera de Vercel (el login de prueba da 404), app en **1.0.0** y primer AAB de producción en EAS. Los APK demo que tienen Joel y Lucas ya no pueden entrar. Cuenta Google Play personal de José creada (no comerciante); faltan verificar el Android con la app Play Console y el teléfono para poder crear la app. OAuth "Del Sur App" en producción (solo nombre y mail: no necesita verificación de Google).
+
 ## iPhone sin cuenta paga (2026-11-16)
 
 Mientras no se pague Apple Developer, la app se instala en el iPhone de José con su Apple ID gratis
