@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
@@ -6,6 +7,7 @@ import { Crest } from '../components/Crest';
 import { DEV_LOGIN } from '../config';
 import type { ScreenProps } from '../navigation/types';
 import { ApiError } from '../services/api';
+import { appleDisponible } from '../services/apple';
 import { LoginCancelled } from '../services/auth';
 import { useSession } from '../state/session';
 import { colors, fonts } from '../theme';
@@ -26,11 +28,15 @@ function GoogleG() {
   );
 }
 
-/** Puerta de entrada: un color, el escudo y "Entrar con Google". Nada más. */
+/** Puerta de entrada: un color, el escudo y "Entrar con Google" (y con Apple en iPhone). Nada más. */
 export default function InicioScreen(_: ScreenProps<'Inicio'>) {
   const insets = useSafeAreaInsets();
-  const { loginGoogle, loginDev } = useSession();
+  const { loginGoogle, loginApple, loginDev } = useSession();
   const [busy, setBusy] = useState(false);
+  const [conApple, setConApple] = useState(false);
+  useEffect(() => {
+    appleDisponible().then(setConApple);
+  }, []);
   const [error, setError] = useState<string | null>(null);
 
   const run = async (login: () => Promise<void>) => {
@@ -56,6 +62,16 @@ export default function InicioScreen(_: ScreenProps<'Inicio'>) {
       <View style={styles.bottom}>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button testID="cta-entrar" label="Entrar con Google" variant="light" icon={<GoogleG />} loading={busy} disabled={busy} onPress={() => run(loginGoogle)} />
+        {conApple ? (
+          <AppleAuthentication.AppleAuthenticationButton
+            testID="cta-apple"
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+            cornerRadius={27}
+            style={[styles.apple, busy && { opacity: 0.5 }]}
+            onPress={() => (busy ? undefined : run(loginApple))}
+          />
+        ) : null}
         {DEV_LOGIN
           ? PRUEBAS.map((p) => (
               <Pressable key={p.testID} testID={p.testID} disabled={busy} onPress={() => run(() => loginDev(p.unico ? `nuevo-${Date.now().toString(36)}@delsur.dev` : p.email, p.name))} accessibilityRole="button">
@@ -72,6 +88,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.navy, paddingHorizontal: 28 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   bottom: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 14 },
+  apple: { width: '100%', height: 54 },
   gWrap: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#DADCE0' },
   g: { fontFamily: fonts.black, fontSize: 15, color: '#4285F4' },
   error: { fontFamily: fonts.medium, fontSize: 13, color: colors.yellow, textAlign: 'center' },

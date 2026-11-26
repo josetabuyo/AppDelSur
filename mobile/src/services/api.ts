@@ -74,6 +74,8 @@ export const api = {
   health: () => request<{ ok: boolean; minAppVersion: string; latestAppVersion: string }>('/api/v1/health'),
   devLogin: (email: string, name: string) =>
     request<{ token: string; user: User }>('/api/v1/auth/dev-login', { method: 'POST', body: { email, name } }),
+  appleLogin: (identityToken: string, name?: string) =>
+    request<{ token: string; user: User }>('/api/v1/auth/apple', { method: 'POST', body: { identityToken, name } }),
   me: (token: string) => request<MeResponse>('/api/v1/me', { token }),
   borrarCuenta: (token: string) => request<{ ok: true; registrosBorrados: number }>('/api/v1/me', { method: 'DELETE', token }),
   crearRegistro: (token: string, payload: RegistroPayload) =>

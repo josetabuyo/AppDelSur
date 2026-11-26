@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, ApiError, onUpgradeRequired, PadronPersona, Registro, User } from '../services/api';
+import { loginWithApple } from '../services/apple';
 import { loginWithBrowser, takeTokenFromLocation } from '../services/auth';
 import { clearToken, getToken, setToken } from '../services/storage';
 
@@ -14,6 +15,7 @@ type SessionValue = {
   padron: PadronPersona[];
   upgradeRequired: string | false; // false o la minAppVersion pedida
   loginGoogle: () => Promise<void>;
+  loginApple: () => Promise<void>;
   loginDev: (email: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   /** Borra la cuenta y todo lo cargado en el backend, y cierra la sesión. */
@@ -90,6 +92,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       padron,
       upgradeRequired,
       loginGoogle: async () => loginWith(await loginWithBrowser()),
+      loginApple: async () => loginWith(await loginWithApple()),
       loginDev: async (email: string, name: string) => {
         const r = await api.devLogin(email, name);
         await loginWith(r.token);

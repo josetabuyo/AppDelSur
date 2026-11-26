@@ -30,9 +30,9 @@ Todo lo que pide Play Console para publicar, listo para copiar. Gráficos en est
 > Del Sur crece y queremos hacerlo bien. Con la app cada jugador, jugadora, familia, socio, ex jugador y amigo del club se suma en dos minutos y nos cuenta lo básico: quiénes somos, dónde vivimos, a qué colegio van los chicos. Con eso el club puede organizarse mejor, comunicarse y tomar decisiones.
 >
 > **Cómo funciona**
-> • Entrás con tu cuenta de Google.
+> • Entrás con tu cuenta de Google (o de Apple en iPhone).
 > • Elegís: juego, cargo los datos de mi hijo/a, o soy parte de la comunidad.
-> • Completás un cuestionario corto: solo nombre y apellido son obligatorios.
+> • Completás un cuestionario corto, de un par de minutos.
 > • Listo. Podés volver a cargar otro hijo/a cuando quieras.
 >
 > **Tus datos**
@@ -70,7 +70,7 @@ Se generan con el flujo real en la web local y un padrón de prueba con nombres 
 | ¿Se puede pedir el borrado? | Sí — en la app y en `/borrar-cuenta`. |
 | Información personal | Nombre, mail, ID de usuario (cuenta de Google), domicilio/localidad, teléfono, otra info (DNI, fecha de nacimiento, colegio, división, familia en el club). |
 | Otra | Respuestas a la encuesta del club (¿estás contento?, ¿conocés a alguien que dejó?). |
-| Uso de todos los datos | **Funcionalidad de la app** y **Administración de la cuenta**. Recopilación obligatoria para nombre/mail/ID; el resto es opcional. |
+| Uso de todos los datos | **Funcionalidad de la app** y **Administración de la cuenta**. Recopilación obligatoria (el cuestionario pide todos los campos). |
 | Ubicación precisa, fotos, contactos, salud, finanzas | No. |
 
 **Apps gubernamentales / financieras / salud / COVID** — No aplica.
