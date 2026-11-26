@@ -158,6 +158,8 @@ Mientras no estén las cuentas de Google Play (USD 25) y Apple (USD 99/año), se
 
 **Hecho el 2026-11-25:** demo borrada en producción, `DEMO_LOGIN` fuera de Vercel (el login de prueba da 404), app en **1.0.0** y primer AAB de producción en EAS. Los APK demo que tienen Joel y Lucas ya no pueden entrar. Cuenta Google Play personal de José creada (no comerciante); faltan verificar el Android con la app Play Console y el teléfono para poder crear la app. OAuth "Del Sur App" en producción (solo nombre y mail: no necesita verificación de Google).
 
+**2026-11-26:** Google aprobó la identidad de José; para crear la app en Play falta entrar a Play Console desde un Android (recién ahí se habilita verificar el teléfono). Apple Developer Program: José se inscribió como **Individual** (no Nonprofit: eso es para entidades registradas) y pagó los USD 99; queda esperar la aprobación de Apple para compilar iOS con EAS y subir a TestFlight.
+
 ## iPhone sin cuenta paga (2026-11-16)
 
 Mientras no se pague Apple Developer, la app se instala en el iPhone de José con su Apple ID gratis
