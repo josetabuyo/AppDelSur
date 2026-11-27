@@ -81,8 +81,8 @@ describe('payload según contrato', () => {
     expect(body.referidoPor).toBeUndefined();
   });
   it('comunidad', () => {
-    const body = buildComunidadPayload(emptyComunidad({ nombre: 'Marta', apellido: 'Ruiz', vinculo: 'familiar', vinculoDetalle: 'mamá de Juan, M10' }));
-    expect(body).toEqual({ tipo: 'comunidad', cargaPara: 'yo', nombre: 'Marta', apellido: 'Ruiz', vinculo: 'familiar', vinculoDetalle: 'mamá de Juan, M10' });
+    const body = buildComunidadPayload(emptyComunidad({ nombre: 'Marta', apellido: 'Ruiz', vinculos: ['familiar', 'socio'], vinculoDetalle: 'mamá de Juan, M10' }));
+    expect(body).toEqual({ tipo: 'comunidad', cargaPara: 'yo', nombre: 'Marta', apellido: 'Ruiz', vinculo: ['familiar', 'socio'], vinculoDetalle: 'mamá de Juan, M10' });
   });
   it('splitName', () => {
     expect(splitName('José Tabuyo')).toEqual({ nombre: 'José', apellido: 'Tabuyo' });

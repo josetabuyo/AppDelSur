@@ -32,7 +32,8 @@ export const registros = pgTable("registros", {
   contento: integer("contento"),
   conoce_quien_dejo: boolean("conoce_quien_dejo"),
   quien_dejo_detalle: text("quien_dejo_detalle"),
-  vinculo: text("vinculo", { enum: ["familiar", "socio", "ex_jugador", "amigo", "otro"] }),
+  /** Uno o varios separados por coma: "socio,ex_jugador" (familiar | socio | ex_jugador | amigo | otro). */
+  vinculo: text("vinculo"),
   vinculo_detalle: text("vinculo_detalle"),
   comentarios: text("comentarios"),
   /** Encuesta de Joel (2026-10-28): cómo conoció el club (referidos) y hermanos que podrían sumarse. */

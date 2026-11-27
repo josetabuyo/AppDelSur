@@ -30,7 +30,7 @@ export type RegistroPayload = {
   comoConocioDetalle?: string;
   hermanosProspecto?: boolean | null;
   hermanosDetalle?: string;
-  vinculo?: Vinculo | null;
+  vinculo?: Vinculo[] | null;
   vinculoDetalle?: string;
   comentarios?: string;
 };
@@ -77,7 +77,7 @@ export function buildComunidadPayload(f: ComunidadForm): RegistroPayload {
     cargaPara: 'yo',
     nombre: f.nombre.trim(),
     apellido: f.apellido.trim(),
-    vinculo: f.vinculo,
+    vinculo: f.vinculos.length ? f.vinculos : undefined,
     vinculoDetalle: opt(f.vinculoDetalle),
     telefono: opt(f.telefono),
     email: opt(f.email)?.toLowerCase(),

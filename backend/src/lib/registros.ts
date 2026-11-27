@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDb, padron, registros } from "@/db";
 
 const txt = z.string().trim().max(500).optional().nullable().transform((v) => (v ? v : null));
+const vinculoEnum = z.enum(["familiar", "socio", "ex_jugador", "amigo", "otro"]);
 const req = z.string({ error: "requerido" }).trim().min(1, "requerido").max(200);
 
 export const registroSchema = z.object({
@@ -22,7 +23,10 @@ export const registroSchema = z.object({
   contento: z.number().int().min(1).max(5).optional().nullable(),
   conoceQuienDejo: z.boolean().optional().nullable(),
   quienDejoDetalle: txt,
-  vinculo: z.enum(["familiar", "socio", "ex_jugador", "amigo", "otro"]).optional().nullable(),
+  /** Uno o varios (socio y ex jugador a la vez, pedido de Joel 2026-11-27). La app 1.0.0 manda uno solo.
+   *  Se guarda en la misma columna, separados por coma: "socio,ex_jugador". */
+  vinculo: z.union([vinculoEnum, z.array(vinculoEnum).max(5)]).optional().nullable()
+    .transform((v) => { const l = v == null ? [] : Array.isArray(v) ? [...new Set(v)] : [v]; return l.length ? l.join(",") : null; }),
   vinculoDetalle: txt,
   comentarios: z.string().trim().max(2000).optional().nullable().transform((v) => (v ? v : null)),
   comoConocio: z.enum(["colegio", "instagram", "parque", "evento", "socio", "otro"], { error: "invalido" }).optional().nullable(),

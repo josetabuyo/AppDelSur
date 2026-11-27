@@ -56,7 +56,9 @@ export default function EnrolamientoScreen({ navigation }: ScreenProps<'Enrolami
     }
   };
 
-  const vinculo = VINCULOS.find((v) => v.value === form.vinculo);
+  const elegidos = VINCULOS.filter((v) => form.vinculos.includes(v.value));
+  const toggleVinculo = (v: Vinculo) =>
+    set('vinculos', form.vinculos.includes(v) ? form.vinculos.filter((x) => x !== v) : [...form.vinculos, v]);
 
   return (
     <FormScaffold
@@ -66,13 +68,13 @@ export default function EnrolamientoScreen({ navigation }: ScreenProps<'Enrolami
     >
       <TextField label="Nombre" value={form.nombre} onChangeText={(v) => set('nombre', v)} error={errors.nombre} autoCapitalize="words" />
       <TextField label="Apellido" value={form.apellido} onChangeText={(v) => set('apellido', v)} error={errors.apellido} autoCapitalize="words" />
-      <SectionLabel>¿Cuál es tu vínculo con el club?</SectionLabel>
+      <SectionLabel>¿Cuál es tu vínculo con el club? Podés marcar más de uno</SectionLabel>
       <View style={styles.chips}>
         {VINCULOS.map((v) => (
-          <Chip key={v.value} label={v.label} selected={form.vinculo === v.value} onPress={() => set('vinculo', form.vinculo === v.value ? null : v.value)} />
+          <Chip key={v.value} label={v.label} selected={form.vinculos.includes(v.value)} onPress={() => toggleVinculo(v.value)} />
         ))}
       </View>
-      {vinculo ? <TextField label="Contanos un poco más" optional value={form.vinculoDetalle} onChangeText={(v) => set('vinculoDetalle', v)} placeholder={vinculo.detalle} /> : null}
+      {elegidos.length ? <TextField label="Contanos un poco más" optional value={form.vinculoDetalle} onChangeText={(v) => set('vinculoDetalle', v)} placeholder={elegidos[0].detalle} /> : null}
       <TextField label="Teléfono" optional value={form.telefono} onChangeText={(v) => set('telefono', maskPhone(v))} error={errors.telefono} keyboardType="phone-pad" placeholder="+54 9 11 5555-5555" />
     </FormScaffold>
   );

@@ -46,3 +46,25 @@ describe("guardarRegistro (completar de a partes)", () => {
     expect(propio).toMatchObject({ creado: false, row: { id: r.row.id, colegio: "Otro colegio" } });
   });
 });
+
+describe("vínculo con el club (uno o varios)", () => {
+  const base = { tipo: "comunidad", cargaPara: "yo", nombre: "Ana", apellido: "Paz" } as const;
+  it("acepta varios y los guarda separados por coma, sin repetir", async () => {
+    const { validateRegistro } = await import("./registros");
+    const v = validateRegistro({ ...base, vinculo: ["socio", "ex_jugador", "socio"] });
+    expect(v.ok && v.data.vinculo).toBe("socio,ex_jugador");
+  });
+  it("sigue aceptando uno solo (app 1.0.0) y nada", async () => {
+    const { validateRegistro } = await import("./registros");
+    const uno = validateRegistro({ ...base, vinculo: "socio" });
+    expect(uno.ok && uno.data.vinculo).toBe("socio");
+    const vacio = validateRegistro({ ...base, vinculo: [] });
+    expect(vacio.ok && vacio.data.vinculo).toBe(null);
+    const nada = validateRegistro(base);
+    expect(nada.ok && nada.data.vinculo).toBe(null);
+  });
+  it("rechaza valores desconocidos", async () => {
+    const { validateRegistro } = await import("./registros");
+    expect(validateRegistro({ ...base, vinculo: ["socio", "presidente"] }).ok).toBe(false);
+  });
+});

@@ -28,7 +28,8 @@ export type JugadorForm = {
 export type ComunidadForm = {
   nombre: string;
   apellido: string;
-  vinculo: Vinculo | null;
+  /** Se puede marcar más de uno (ej. socio y ex jugador). */
+  vinculos: Vinculo[];
   vinculoDetalle: string;
   telefono: string;
   email: string;
@@ -58,7 +59,7 @@ export const emptyJugador = (prefill: Partial<JugadorForm> = {}): JugadorForm =>
 export const emptyComunidad = (prefill: Partial<ComunidadForm> = {}): ComunidadForm => ({
   nombre: '',
   apellido: '',
-  vinculo: null,
+  vinculos: [],
   vinculoDetalle: '',
   telefono: '',
   email: '',
