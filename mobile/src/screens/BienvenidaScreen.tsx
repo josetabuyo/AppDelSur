@@ -37,7 +37,7 @@ function Foto({ source, alto, titulo, texto }: { source: number | null; alto: nu
 
 /**
  * Para quien entra y no está en el padrón. Arriba, el camino del jugador ("Soy jugador", directo a la
- * ficha). Después los banners, de lo deportivo a lo social. Abajo, "Quiero ser parte del club" para la
+ * ficha). Después los banners, de lo deportivo a lo social. Abajo, "Sumarme a la comunidad" para la
  * familia, socios, ex jugadores y amigos.
  */
 export default function BienvenidaScreen({ navigation, route }: ScreenProps<'Bienvenida'>) {
@@ -109,7 +109,7 @@ export default function BienvenidaScreen({ navigation, route }: ScreenProps<'Bie
           <Text style={styles.somos}>Somos familia</Text>
           <Stripes width={96} />
           <Text style={styles.socialText}>¿No jugás pero sos familia, socio/a, ex jugador/a o amigo/a del club? Sumate a la comunidad.</Text>
-          <Button testID="ser-parte" label="Quiero ser parte del club" variant="light" onPress={() => navigation.navigate('Enrolamiento')} />
+          <Button testID="ser-parte" label="Sumarme a la comunidad" variant="light" onPress={() => navigation.navigate('Enrolamiento')} />
         </View>
 
         <View style={styles.footer}>
